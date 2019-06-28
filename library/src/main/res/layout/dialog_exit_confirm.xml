@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="300dp"
+    android:layout_height="130dp"
+    android:layout_gravity="center"
+    android:orientation="vertical"
+    android:background="@drawable/confirm_dialog_bg"
+    android:padding="@dimen/dimen_20dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="识别即将完成，请再等一下"
+        android:textSize="15sp"
+        android:textColor="@color/text_normal_color"
+        android:layout_gravity="center_horizontal"
+        />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/dimen_40dp"
+        >
+        <TextView
+            android:id="@+id/tv_exit_confirm"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="确认离开"
+            android:textColor="@color/text_normal_color"
+            android:textSize="13sp"
+            android:layout_alignParentLeft="true"
+            android:background="@drawable/back_modify_bg"
+
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
+
+        <TextView
+            android:id="@+id/rv_wait_more_time"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="再等一下"
+            android:layout_alignParentRight="true"
+            android:textColor="@android:color/white"
+            android:background="@drawable/confirm_bg"
+
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"/>
+    </RelativeLayout>
+
+</LinearLayout>

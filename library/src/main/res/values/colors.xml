@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <color name="colorPrimary">#29303b</color>
+    <color name="colorPrimaryDark">@android:color/black</color>
+    <color name="colorAccent">#00a0e9</color>
+    <color name="background">#f5f5f5</color>
+
+    <color name="text_normal_color">#616161</color>
+    <color name="divider_hint_color">#c1bebe</color>
+    <color name="hint_text">#cccccc</color>
+    <color name="hint_text_tran">#69cccccc</color>
+    <color name="divider_color">#DCDCDC</color>
+    <color name="transparent_divider_color">#e4dcdcdc</color>
+    <color name="slide_text_color">#3d3d3d</color>
+    <color name="protocol_text_color">#5C8AE6 </color>
+    <color name="main_hint_color">#40496B</color>
+    <color name="main_text_color">#666666</color>
+    <color name="main_text_hint_color">#9b9b9b</color>
+    <color name="_text_hint_color">#bababa</color>
+    <color name="main_text_title_color">#3d3d3d</color>
+    <color name="main_seb_text_title_color">#4A4A4A</color>
+    <color name="main_sub_text_color">#9b9b9b</color>
+    <color name="main_orange_color">#FFA728</color>
+    <color name="edit_text_hint">#cccccc</color>
+    <color name="purpose_text_color">#40496B</color>
+    <color name="overdue_color">#CB5656</color>
+    <color name="pie_blue_color">#4566CD</color>
+    <color name="pie_orange_color">#FFA728</color>
+    <color name="pie_yellow_color">#FED704</color>
+    <color name="pie_purpose_color">#9879CD</color>
+    <color name="pie_green_color">#52D96F</color>
+    <color name="pie_dark_purpose_color">#40496B</color>
+    <color name="pie_dark_empty_color">#DCDCDC</color>
+    <color name="text_background">#F7F7F7</color>
+    <color name="text_day_">#C4C4C4</color>
+    <color name="bill_refresh_fail_button_color">#40496B</color>
+</resources>
