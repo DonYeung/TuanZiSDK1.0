@@ -9,5 +9,35 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+      <application
+          >
+
+          <activity
+              android:name=".activity.IDCardDetectActivity"
+              android:theme="@style/Theme.AppCompat.NoActionBar"
+              android:screenOrientation="landscape"/>
+
+          <activity
+              android:name="com.moxie.client.accessible.AccessibleCrawlerActivity"
+              android:theme="@style/Theme.AppCompat.Light.NoActionBar"
+              android:screenOrientation="portrait"
+              android:launchMode="singleTask"/>
+          <service
+              android:name="com.moxie.client.accessible.AccessibleCrawlerService"
+              android:enabled="true"
+              android:exported="true"
+              android:label="@string/accessibility_name"
+              android:accessibilityFlags="flagReportViewIds"
+              android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+              <intent-filter>
+                  <action android:name="android.accessibilityservice.AccessibilityService" />
+              </intent-filter>
+              <meta-data
+                  android:name="android.accessibilityservice"
+                  android:resource="@xml/accessible_crawler_config" />
+          </service>
+
+
+      </application>
 
 </manifest>

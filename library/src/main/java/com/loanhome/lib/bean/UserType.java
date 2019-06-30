@@ -1,7 +1,5 @@
 package com.loanhome.lib.bean;
 
-import com.loanhome.lib.http.HttpResult;
-
 /**
  * @Description TODO
  * Created by Don on 2019/5/28

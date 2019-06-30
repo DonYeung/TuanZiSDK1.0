@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="@drawable/idcard_fail_tip_bg">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:gravity="right">
+
+        <ImageView
+            android:id="@+id/img_photo_2_1"
+            android:layout_width="63dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="6dp"
+            android:src="@drawable/fault_tips_2"/>
+        <TextView
+            android:id="@+id/tv_idcard_fail_tip_2_1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="身份证置入框内"
+            android:maxEms="5"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="2dp"
+            android:textSize="10sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="@dimen/dimen_8dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <ImageView
+            android:id="@+id/img_photo_2_2"
+            android:layout_width="63dp"
+            android:layout_height="48dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="6dp"
+            android:src="@drawable/fault_tips_3"/>
+
+        <TextView
+            android:id="@+id/tv_idcard_fail_tip_2_2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="身份证完整四边"
+            android:maxEms="5"
+            android:gravity="center"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="2dp"
+            android:textSize="10sp"
+            android:textColor="#666666"
+            android:layout_marginBottom="@dimen/dimen_8dp"/>
+
+    </LinearLayout>
+
+</LinearLayout>

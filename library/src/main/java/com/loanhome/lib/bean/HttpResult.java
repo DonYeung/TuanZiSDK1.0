@@ -1,4 +1,4 @@
-package com.loanhome.lib.http;
+package com.loanhome.lib.bean;
 
 /**
  * @Description TODO

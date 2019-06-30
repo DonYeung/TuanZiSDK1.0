@@ -6,8 +6,9 @@ import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
 
-import com.google.gson.JsonObject;
 import com.loanhome.lib.BuildConfig;
+import com.loanhome.lib.bean.BankCardResult;
+import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.IDCardResult;
 import com.loanhome.lib.bean.UserType;
 import com.loanhome.lib.util.Constants;
@@ -16,6 +17,7 @@ import com.loanhome.lib.util.TestUtil;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 import io.reactivex.Observable;
@@ -41,7 +43,6 @@ public class RetrofitUtils4test {
     private ApiService apiService;
     private static Context mContext;
     private static RetrofitUtils4test mInstance;
-    private ResponseListener listener;
     @Deprecated
     //没用了，通过请求headers里的Content-Encoding来判断客户端数据有没有压缩
     private final static int HANDLE = 0;
@@ -103,8 +104,12 @@ public class RetrofitUtils4test {
         return apiService.getUserType();
     }
 
+
     /**
-     * 请求获取激活时用户类型的方法
+     * OCR请求接口
+     * @param data
+     * @param mark
+     * @return
      */
     public Observable<IDCardResult> getOCRResult(byte[] data
             ,int mark) {
@@ -123,7 +128,355 @@ public class RetrofitUtils4test {
     }
 
 
-    public void getUserType_main() {
+    /**
+     * 活体请求接口
+     * @param map
+     * @param name
+     * @param number
+     * @param delta
+     * @return
+     */
+    public Observable<HttpResult> upLoadingLivenessInfo_New(Map<String, byte[]> map
+            , String name
+            , String number
+            , String delta) {
+        // TODO: 2019/6/28
+        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        try {
+            phead.put("idCardName", name);
+            phead.put("idCardNumber", number);
+            phead.put("imageBest", Base64.encodeToString(map.get("image_best"), Base64.DEFAULT));
+            phead.put("imageAction1", Base64.encodeToString(map.get("image_action1"), Base64.DEFAULT));
+            phead.put("imageAction2", Base64.encodeToString(map.get("image_action2"), Base64.DEFAULT));
+            phead.put("imageAction3", Base64.encodeToString(map.get("image_action3"), Base64.DEFAULT));
+            phead.put("delta", delta);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.upLoadingLivenessInfo_New(body);
+    }
+
+    /**
+     * bank OCR请求接口
+     * @param data
+     * @return
+     */
+    public Observable<BankCardResult> getBankOCRResult(byte[] data) {
+        // TODO: 2019/6/28
+        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        try {
+            phead.put("image", Base64.encodeToString(data, Base64.DEFAULT));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.getBankOCRResult(body);
+    }
+
+    /**
+     * 上传用户信息，魔蝎sdk后请求30接口使用
+     * @param account
+     * @param taskId
+     * @return
+     */
+    public Observable<HttpResult> uploadUserInfo(final JSONObject account, String taskId) {
+        // TODO: 2019/6/28
+        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        try {
+            phead.put("account",account);
+            phead.put("taskId",taskId);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.uploadUserInfo(body);
+    }
+
+
+    /**
+     * 魔蝎sdk 请求24接口轮询任务状态
+     * @param type
+     * @param taskId
+     * @param mode
+     * @return
+     */
+    public Observable<HttpResult> fetchTypeState(final String type, String taskId, String mode) {
+        // TODO: 2019/6/28
+        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        try {
+            phead.put("type",type);
+            phead.put("taskId",taskId);
+            phead.put("mode",mode);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.fetchTypeState(body);
+    }
+
+    /**
+     * 新OCR增加的统计接口，增加了api_id
+     * @param page
+     * @param logType
+     * @param ckModule
+     * @param index
+     * @param functionid
+     * @param contentid
+     */
+    public Observable<HttpResult> newOCRRequestStatics(String page,String logType, String ckModule, String index, String functionid, String contentid,String api_id,
+                                                         String pPosition, String param1, String param2) {
+
+        // TODO: 2019/6/28
+        JSONObject data = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        JSONObject newdata = new JSONObject();
+
+        try {
+            data.put("product_id",contentid);
+            data.put("api_id",api_id);
+
+            newdata.put("phead", data);
+
+
+            newdata.put("page",page);
+            newdata.put("position", index.equals(String.valueOf(-1)) ? "": index);
+            newdata.put("log_type", logType);
+            newdata.put("ck_module",ckModule);
+            newdata.put("functionid", functionid == null ? "" : functionid);
+//                data.put("contentid", contentid == null ? "" : contentid); //写到phead中
+            newdata.put("p_position", pPosition == null ? "" : pPosition);
+            newdata.put("param1", param1 == null ? "" : param1);
+            newdata.put("param2", param2 == null ? "" : param2);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(newdata);
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.newOCRRequestStatics(body);
+    }
+
+
+    /**
+     * OCR请求接口
+     * @param data
+     * @param mark
+     * @param listener
+     */
+    public void getOCRResultmain(byte[] data,int mark,final ResponseListener listener){
+        RetrofitUtils4test.getInstance(mContext).getOCRResult(data,mark)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<IDCardResult>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(IDCardResult idCardResult) {
+                        if (idCardResult.getResult().getStatus()!= STATUS_SUCCESS) {
+                            handleResult(idCardResult.getResult(),listener);
+                        }
+                        else{
+                            listener.onResponse(idCardResult);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError: "+e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
+    /**
+     * 活体请求接口
+     * @param map
+     * @param name
+     * @param number
+     * @param delta
+     * @param listener
+     */
+    public void upLoadingLivenessInfo_Newmain(Map<String, byte[]> map
+            , String name
+            , String number
+            , String delta,final ResponseListener listener){
+        RetrofitUtils4test.getInstance(mContext).upLoadingLivenessInfo_New(map,name,number,delta)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<HttpResult>() {
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(HttpResult httpResult) {
+                        if (httpResult.getStatus()!= STATUS_SUCCESS) {
+                            handleResult(httpResult,listener);
+                        }
+                        else{
+                            listener.onResponse(httpResult);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError: "+e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
+    /**
+     * 银行卡OCR接口
+     * @param data
+     * @param listener
+     */
+    public void getBankOCRResultmain(byte[] data,final ResponseListener listener){
+        RetrofitUtils4test.getInstance(mContext).getBankOCRResult(data)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<BankCardResult>() {
+
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(BankCardResult bankCardResult) {
+                        if (bankCardResult.getResult().getStatus()!= STATUS_SUCCESS) {
+                            handleResult(bankCardResult.getResult(),listener);
+                        }
+                        else{
+                            listener.onResponse(bankCardResult);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError: "+e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
+    /**
+     * 魔蝎sdk 请求24接口轮询任务状态
+     * @param type
+     * @param taskId
+     * @param mode
+     * @param listener
+     */
+    public void fetchTypeStatemain(final String type, String taskId, String mode,final ResponseListener listener){
+        RetrofitUtils4test.getInstance(mContext).fetchTypeState(type,taskId,mode)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<HttpResult>() {
+
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(HttpResult httpResult) {
+                        if (httpResult.getStatus()!= STATUS_SUCCESS) {
+                            handleResult(httpResult,listener);
+                        }
+                        else{
+                            listener.onResponse(httpResult);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError: "+e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
+    /**
+     * 上传用户信息，魔蝎sdk后请求30接口使用
+     * @param account
+     * @param taskId
+     * @param listener
+     */
+    public void uploadUserInfomain(final JSONObject account, String taskId,final ResponseListener listener){
+        RetrofitUtils4test.getInstance(mContext).uploadUserInfo(account,taskId)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<HttpResult>() {
+
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(HttpResult httpResult) {
+                        if (httpResult.getStatus()!= STATUS_SUCCESS) {
+                            handleResult(httpResult,listener);
+                        }
+                        else{
+                            listener.onResponse(httpResult);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError: "+e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    /**
+     * 请求获取激活时用户类型的方法
+     */
+    public void getUserType_main(final ResponseListener listener) {
         final SharedPreferences mSp = mContext.getSharedPreferences(
                 Constants.SharedPreferencesKey.DEVICE_USER_TYPE,
                 Context.MODE_PRIVATE);
@@ -141,7 +494,7 @@ public class RetrofitUtils4test {
                     @Override
                     public void onNext(UserType userType) {
                         if (userType.getResult().getStatus()!= STATUS_SUCCESS) {
-                            handleResult(userType.getResult());
+                            handleResult(userType.getResult(),listener);
                         }
 
                         Boolean device_global_new_user = userType.isDevice_global_new_user();
@@ -166,20 +519,22 @@ public class RetrofitUtils4test {
     }
 
 
-    public interface ResponseListener {
-        void onResponse(HttpResult response);
+    public interface ResponseListener<T> {
+        void onResponse(T response);
 
         void onErrorResponse(int errorcode, String msg);
     }
 
-    private  void handleResult(HttpResult response) {
+    public   void handleResult(HttpResult response,ResponseListener listener) {
         int status = response.getStatus();
+        int errorCode = response.getErrorcode();
+        String msg = response.getMsg();
         if (status == STATUS_OVERDUE || status == STATUS_REGISTER) {
 //            AccountContoller.getInstance().gotoLogin();
+            if (listener != null) {
+                listener.onErrorResponse(errorCode,msg);
+            }
         } else if (status == STATUS_SERVER_HANDLE_ERROR || status == STATUS_BUSINESS_HANDLE_ERROR) {
-            // TODO 服务器错误，上传统计
-            int errorCode = response.getErrorcode();
-            String msg = response.getMsg();
             if (listener != null) {
                 listener.onErrorResponse(errorCode,msg);
             }

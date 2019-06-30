@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:background="@drawable/confirm_dialog_bg"
+    android:layout_marginRight="35dp"
+    android:layout_marginLeft="35dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp">
+
+        <TextView
+            android:id="@+id/liveness_result_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:text="活体认证失败"
+            android:textColor="#666666"
+            android:textSize="16sp"/>
+
+        <ImageView
+            android:id="@+id/img_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/cir_close"
+            android:layout_marginRight="10dp"/>
+
+    </RelativeLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="#ffcccccc"/>
+
+    <TextView
+        android:id="@+id/tv_liveness_reason"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:gravity="center"
+        android:text="#reason#"
+        android:layout_marginTop="46dp"
+        android:layout_marginBottom="30dp"
+        android:layout_marginLeft="@dimen/dp_16"
+        android:layout_marginRight="@dimen/dp_16"
+        android:textSize="15sp"
+        android:textColor="@color/text_normal_color"
+        />
+
+
+    <TextView
+        android:id="@+id/tv_liveness_next_operation"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_48"
+        android:text="再试一下"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/dp_16"
+        android:layout_marginRight="@dimen/dp_16"
+        android:layout_marginLeft="@dimen/dp_16"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/liveness_result_operation_bg"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/dp_16"/>
+
+</LinearLayout>

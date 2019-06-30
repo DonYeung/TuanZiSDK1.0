@@ -1,6 +1,8 @@
 package com.loanhome.lib.http;
 
 import android.util.Log;
+
+import com.loanhome.lib.util.Global;
 import com.loanhome.lib.util.TestUtil;
 
 import org.json.JSONException;
@@ -55,7 +57,7 @@ public class BaseInterceptor4Phead implements Interceptor {
         // TODO: 2019/6/28 从开发项目中传入pheadjson 然后进行请求
         JSONObject object =new JSONObject();
         Request newRequest = builder .addHeader("Content-Type","application/json;charset=utf-8")
-                .addHeader("phead",getParamJsonObject(getPostDataWithPhead()).toString())
+//                .addHeader("phead",getParamJsonObject(getPostDataWithPhead()).toString())
                 .build();
 
         return chain.proceed(newRequest);
@@ -90,7 +92,8 @@ public class BaseInterceptor4Phead implements Interceptor {
     public static JSONObject getPheadJson() {
         // TODO: 2019/6/28
 
-        return null;
+        JSONObject pheadJson = Global.writeProductInfoToJSON(Global.getGlobalInfo());
+        return pheadJson;
     }
 
 }

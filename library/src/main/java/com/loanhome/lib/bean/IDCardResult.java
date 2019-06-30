@@ -1,7 +1,5 @@
 package com.loanhome.lib.bean;
 
-import com.loanhome.lib.http.HttpResult;
-
 import java.util.List;
 
 /**
@@ -10,6 +8,9 @@ import java.util.List;
 public class IDCardResult {
 
     private HttpResult result;
+
+
+
     /**
      * iconList : [{"icon":"https://img.tuanzidai.cn/fault_tips_1.png","iconMsg":"使用身份证原件"}]
      * iconType : 1
@@ -21,7 +22,15 @@ public class IDCardResult {
     private boolean flag;
     private String errorMsg;
     private List<IconListBean> iconList;
+    private List<IdCardMessage> idCardMessages;
 
+    public List<IdCardMessage> getIdCardMessages() {
+        return idCardMessages;
+    }
+
+    public void setIdCardMessages(List<IdCardMessage> idCardMessages) {
+        this.idCardMessages = idCardMessages;
+    }
 
     public HttpResult getResult() {
         return result;
@@ -87,6 +96,54 @@ public class IDCardResult {
 
         public void setIconMsg(String iconMsg) {
             this.iconMsg = iconMsg;
+        }
+    }
+
+    public static class IdCardMessage{
+        private String validDate;
+        private String issueBy;
+        private String idCardName;
+        private String idCardNumber;
+        private String adress;
+
+        public String getValidDate() {
+            return validDate;
+        }
+
+        public void setValidDate(String validDate) {
+            this.validDate = validDate;
+        }
+
+        public String getIssueBy() {
+            return issueBy;
+        }
+
+        public void setIssueBy(String issueBy) {
+            this.issueBy = issueBy;
+        }
+
+        public String getIdCardName() {
+            return idCardName;
+        }
+
+        public void setIdCardName(String idCardName) {
+            this.idCardName = idCardName;
+        }
+
+        public String getIdCardNumber() {
+            return idCardNumber;
+        }
+
+        public void setIdCardNumber(String idCardNumber) {
+            this.idCardNumber = idCardNumber;
+        }
+
+        public String getAdress() {
+            return adress;
+        }
+
+        public void setAdress(String adress) {
+            this.adress = adress;
         }
     }
 }

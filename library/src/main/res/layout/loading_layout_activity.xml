@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    android:background="@color/mark_color"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <RelativeLayout
+        android:layout_centerInParent="true"
+        android:id="@+id/rl_loading"
+        android:background="@drawable/bg_black_circle"
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="172dp"
+        android:layout_height="128dp">
+        <ProgressBar
+            android:indeterminateDrawable="@drawable/rotate_progress_bar_white"
+            android:layout_marginTop="@dimen/dp_24"
+            android:id="@+id/pb"
+            android:layout_centerHorizontal="true"
+            android:layout_width="30dp"
+            android:layout_height="30dp" />
+        <TextView
+            android:layout_marginLeft="@dimen/dp_16"
+            android:id="@+id/tv_loading"
+            android:layout_marginTop="10dp"
+            android:textSize="@dimen/sp_14"
+            android:layout_below="@id/pb"
+            android:text="正在更新"
+            android:textColor="@color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_marginLeft="3dp"
+            android:layout_toRightOf="@+id/tv_loading"
+            android:id="@+id/tv_tip"
+            android:layout_marginTop="11dp"
+            android:textSize="@dimen/sp_12"
+            android:layout_below="@id/pb"
+            android:text="(预计需要40s)"
+            android:textColor="#b2ffffff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            />
+        <TextView
+            android:layout_centerHorizontal="true"
+            android:id="@+id/tv_text"
+            android:layout_marginTop="10dp"
+            android:textSize="@dimen/sp_12"
+            android:layout_below="@id/tv_loading"
+            android:text="可能需要短信验证码"
+            android:textColor="#b2ffffff"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+</RelativeLayout>

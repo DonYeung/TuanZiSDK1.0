@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/idcard_fail_tip_bg">
+
+    <ImageView
+        android:id="@+id/img_photo_1"
+        android:layout_width="63dp"
+        android:layout_height="48dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="6dp"
+        android:src="@drawable/fault_tips_1"/>
+
+    <TextView
+        android:id="@+id/tv_idcard_fail_tip_1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="身份证原件示例"
+        android:gravity="center_horizontal"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="2dp"
+        android:textSize="10sp"
+        android:textColor="#666666"
+        android:layout_marginBottom="@dimen/dp_8"/>
+
+</LinearLayout>

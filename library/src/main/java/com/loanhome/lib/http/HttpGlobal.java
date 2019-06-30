@@ -27,6 +27,11 @@ public class HttpGlobal {
         static String LOAN_USER_SERVICE = "loan-user";
 
         static String LOAN_DATA_SOURCE = "loan-datasource";
+
+        static String LOAN_STATISTICS = "loan-statistics";
+
+        static String LOAN_ACCOUNT_TOOL = "loan_account_tool";
+
     }
     interface Net {
         /**

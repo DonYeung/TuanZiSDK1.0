@@ -32,12 +32,22 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.loanhome.lib.R;
 import com.loanhome.lib.bean.IDCardFailInfo;
+import com.loanhome.lib.http.RetrofitUtils4test;
+import com.loanhome.lib.http.StatisticsController;
 import com.loanhome.lib.listener.ExitConfirmDialogDismissListener;
+import com.loanhome.lib.listener.IDCardResultDialogDismissListener;
+import com.loanhome.lib.listener.IDCardVerifyFailDialogDismissListener;
+import com.loanhome.lib.listener.LivenessDialogDismissListener;
+import com.loanhome.lib.statistics.IStatisticsConsts;
 import com.loanhome.lib.util.ICamera;
+import com.loanhome.lib.util.Machine;
 import com.loanhome.lib.util.RotaterUtil;
 import com.loanhome.lib.util.Util;
+import com.loanhome.lib.view.ConfirmDialog;
 import com.loanhome.lib.view.ExitConfirmDialog;
 import com.loanhome.lib.view.IDCardGuideH;
+import com.loanhome.lib.view.IDCardVerifyFailDialog;
+import com.loanhome.lib.view.LivenessResultDialog;
 import com.megvii.idcardquality.IDCardQualityAssessment;
 import com.megvii.idcardquality.IDCardQualityResult;
 import com.megvii.idcardquality.bean.IDCardAttr;
@@ -402,15 +412,15 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
             //新OCR统计-调用相机
             if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
-//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
-//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_ASKCAMERA,index
-//                        , functionId, contentId,api_id, pPosition, "0", param2);
+                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_ASKCAMERA,index
+                        , functionId, contentId,api_id, pPosition, "0", param2);
             } else {
-//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
-//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_ASKCAMERA,
-//                        index, functionId, contentId,api_id, pPosition, "1", param2);
+                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_ASKCAMERA,
+                        index, functionId, contentId,api_id, pPosition, "1", param2);
             }
 
         } else {
@@ -470,20 +480,20 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
             //开始预处理埋点
             if (!mIsFrontPre && mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT){
                 //新OCR统计-开始抓拍/正面
-//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
-//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_SHOT,index
-//                        , functionId, contentId,api_id, pPosition, "0", param2);
+                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_SHOT,index
+                        , functionId, contentId,api_id, pPosition, "0", param2);
 
                 mIsFrontPre = true;
 
             } else if (!mIsBackPre && mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_BACK){
 
                 //新OCR统计-开始抓拍/反面
-//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
-//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_SHOT,
-//                        index, functionId, contentId,api_id, pPosition, "1", param2);
+                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_SHOT,
+                        index, functionId, contentId,api_id, pPosition, "1", param2);
                 mIsBackPre = true;
             }
 
@@ -920,15 +930,15 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
                         //新OCR统计-点击关闭按钮
                         if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
-//                            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
-//                                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,index
-//                                    , functionId, contentId,api_id, pPosition, "0", param2);
+                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,index
+                                    , functionId, contentId,api_id, pPosition, "0", param2);
                         } else {
-//                            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
-//                                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,
-//                                    index, functionId, contentId,api_id, pPosition, "1", param2);
+                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,
+                                    index, functionId, contentId,api_id, pPosition, "1", param2);
                         }
 
                         callBackData();
@@ -942,15 +952,15 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
             //新OCR统计-点击关闭按钮
             if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
-//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
-//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,index
-//                        , functionId, contentId,api_id, pPosition, "0", param2);
+                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,index
+                        , functionId, contentId,api_id, pPosition, "0", param2);
             } else {
-//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
-//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,
-//                        index, functionId, contentId,api_id, pPosition, "1", param2);
+                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,
+                        index, functionId, contentId,api_id, pPosition, "1", param2);
             }
 
             callBackData();
@@ -999,12 +1009,304 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         if (mIdSide == 0) {
             Log.i(TAG, "gotoVerify: 正面请求认证");
 
+            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<JSONObject>() {
+
+                @Override
+                public void onResponse(JSONObject response) {
+
+                    isIdentifying = false;
+                    Log.i(TAG, "onResponse: "+response.toString());
+
+                    boolean flag = response.optBoolean("flag");
+                    if (!flag){
+                        int errorType = response.optInt("error_type");
+
+                        // TODO: 2019/2/28 正面失败是区分原因 埋点
+                        final String msg = response.optString("errorMsg");
+                        final int type = response.optInt("iconType");
+                        JSONArray jsonArray = response.optJSONArray("iconList");
+                        if (jsonArray == null ){
+                            if (msg != null && !TextUtils.isEmpty(msg)){
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        LivenessResultDialog livenessDialog = new LivenessResultDialog();
+                                        livenessDialog.show(getFragmentManager(), "");
+                                        livenessDialog.setTitle("认证失败");
+                                        livenessDialog.setReson(msg);
+                                        livenessDialog.setLivenessDialogDismissListener(new LivenessDialogDismissListener() {
+                                            @Override
+                                            public void onDismiss(boolean isTryAgain) {
+                                                switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                            return;
+                        }
+                        final List<IDCardFailInfo> failInfos = getFailInfo(jsonArray);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                IDCardVerifyFailDialog failDialog = new IDCardVerifyFailDialog();
+                                if (!IDCardDetectActivity.this.isDestroyed()){
+                                    failDialog.show(getFragmentManager(), String.valueOf(type));
+                                }
+                                failDialog.setFaidReason(msg);
+                                if (failInfos != null){
+                                    for (int i = 0 ; i < failInfos.size() ; i++){
+                                        failDialog.setTvFailTip(failInfos.get(i).getMsg(), type, i);
+                                        failDialog.setImgPhoto(failInfos.get(i).getIcon(), type, i);
+                                    }
+                                }
+                                failDialog.setIDCardVerifyFailDialogDismissListener(new IDCardVerifyFailDialogDismissListener() {
+                                    @Override
+                                    public void onDismiss() {
+
+                                        switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT);
+
+                                    }
+                                });
+                            }
+                        });
+                        return;
+                    }
+                    /**识别成功*/
+
+
+                    JSONObject idCardMessage = response.optJSONObject("idCardMessage");
+                    final String name = idCardMessage.optString("idCardName");
+                    final String number = idCardMessage.optString("idCardNumber");
+                    final String address = idCardMessage.optString("address");
+
+//                    event.setIdCardName(name);
+//                    event.setIdCardNumber(number);
+//                    event.setAddress(address);
+//                    event.setFrontImages(Base64.encodeToString(bytes, Base64.DEFAULT));
+                    isNeedCallBackFront = true;
+                    //弹窗提醒
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ConfirmDialog dialog = new ConfirmDialog();
+                            if (!IDCardDetectActivity.this.isDestroyed()){
+                                dialog.show(getFragmentManager(), ConfirmDialog.FRONT_CONFIRM);
+                            }
+                            //新OCR统计-打开弹窗/正面
+                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_POPUP,
+                                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_POPUP,index
+                                    , functionId, contentId,api_id, pPosition, "0", param2);
+
+                            dialog.setIdName(name);
+                            dialog.setIdNumber(number);
+                            dialog.setIdAddress(address);
+                            dialog.setIDCardResultDialogDismissListener(new IDCardResultDialogDismissListener() {
+                                @Override
+                                public void onDismiss(boolean isconfirm) {
+                                    if (isconfirm){
+
+
+                                        //新OCR统计-确认无误按钮/正面
+                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_CONFIRM,
+                                                IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                                IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CONFIRM,index
+                                                , functionId, contentId,api_id, pPosition, "0", param2);
+
+                                        isFrontComplete = true;
+                                        //假如反面已经完成，则回调信息给页端
+                                        if (isBackComplete){
+                                            // 下一模块
+                                            callBackData();
+
+
+                                        } else {
+                                            //假如反面没有完成，则开始反面ocr
+                                            switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+
+                                        }
+                                    } else {
+
+                                        //新OCR统计-重试按钮/正面
+                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_RETRY,
+                                                IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                                IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_RETRY,index
+                                                , functionId, contentId,api_id, pPosition, "0", param2);
+
+                                        //用户不确认信息，重新开始正面的ocr
+                                        switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT);
+                                        isNeedCallBackFront = false;
+                                        isFrontComplete = false;
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+
+                @Override
+                public void onErrorResponse(int errorcode, String msg) {
+
+                    isIdentifying = false;
+                    if (!Machine.isNetworkOK(IDCardDetectActivity.this)){
+                        Toast.makeText(IDCardDetectActivity.this, "未能连接到互联网，请检查网络设置",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    Log.i(TAG, "onErrorResponse: "+msg);
+                    switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT);
+                }
+            });
 
         } else {//背面认证
             Log.i(TAG, "gotoVerify: 背面请求认证");
 
+            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<JSONObject>() {
 
-        }
+                @Override
+                public void onResponse(JSONObject response) {
+
+                    isIdentifying = false;
+                    Log.i(TAG, "onResponse: "+response.toString());
+                    boolean flag = response.optBoolean("flag");
+                    if (!flag) {
+
+
+
+                        final String errorMsg = response.optString("errorMsg");
+                        final int type = response.optInt("iconType");
+                        JSONArray jsonArray = response.optJSONArray("iconList");
+                        if (jsonArray == null){
+                            if (errorMsg != null && !TextUtils.isEmpty(errorMsg)){
+                                runOnUiThread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        LivenessResultDialog livenessDialog = new LivenessResultDialog();
+                                        livenessDialog.show(getFragmentManager(), "");
+                                        livenessDialog.setTitle("认证失败");
+                                        livenessDialog.setReson(errorMsg);
+                                        livenessDialog.setLivenessDialogDismissListener(new LivenessDialogDismissListener() {
+                                            @Override
+                                            public void onDismiss(boolean isTryAgain) {
+                                                switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        }
+                        final List<IDCardFailInfo> failInfos = getFailInfo(jsonArray);
+
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                IDCardVerifyFailDialog failDialog = new IDCardVerifyFailDialog();
+                                if (!IDCardDetectActivity.this.isDestroyed()){
+                                    failDialog.show(getFragmentManager(), String.valueOf(type));
+                                }
+                                failDialog.setFaidReason(errorMsg);
+                                if (failInfos != null){
+                                    for (int i = 0 ; i < failInfos.size() ; i++){
+                                        failDialog.setTvFailTip(failInfos.get(i).getMsg(), type, i);
+                                        failDialog.setImgPhoto(failInfos.get(i).getIcon(), type, i);
+                                    }
+                                }
+                                failDialog.setIDCardVerifyFailDialogDismissListener(new IDCardVerifyFailDialogDismissListener() {
+                                    @Override
+                                    public void onDismiss() {
+
+                                        switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+
+                                    }
+                                });
+                            }
+                        });
+                        return;
+                    }
+
+
+                    JSONObject idCardMessage = response.optJSONObject("idCardMessage");
+                    final String validDate = idCardMessage.optString("validDate");
+                    final String issueBy = idCardMessage.optString("issuedBy");
+//                    event.setBackImages(Base64.encodeToString(bytes, Base64.DEFAULT));
+//                    event.setValidDate(validDate);
+//                    event.setIssueBy(issueBy);
+                    isNeedCallBackBack = true;
+                    //弹窗提醒
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            ConfirmDialog dialog = new ConfirmDialog();
+                            if (!IDCardDetectActivity.this.isDestroyed()){
+                                dialog.show(getFragmentManager(), ConfirmDialog.BACK_CONFIRM);
+                            }
+
+                            //新OCR统计-打开弹窗/反面
+                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_POPUP,
+                                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_POPUP,index
+                                    , functionId, contentId, api_id,pPosition, "1", param2);
+
+                            dialog.setIdIssueBy(issueBy);
+                            dialog.setIdValidDate(validDate);
+                            dialog.setIDCardResultDialogDismissListener(new IDCardResultDialogDismissListener() {
+                                @Override
+                                public void onDismiss(boolean isconfirm) {
+                                    if (isconfirm){
+
+                                        //新OCR统计-确认无误按钮/反面
+                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_CONFIRM,
+                                                IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                                IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CONFIRM,index
+                                                , functionId, contentId, api_id,pPosition, "1", param2);
+
+                                        isBackComplete = true;
+                                        //假如正面已完成，则回调信息给页端
+                                        if (isFrontComplete){
+                                            //下一模块
+                                            callBackData();
+
+                                        } else {
+                                            //假如正面没有完成，则开始正面的ocr
+                                            switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT);
+
+                                        }
+                                    } else {
+
+
+                                        //新OCR统计-重试按钮/反面
+                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_RETRY,
+                                                IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                                IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_RETRY,index
+                                                , functionId, contentId, api_id,pPosition, "1", param2);
+
+                                        //不确认信息，则重新开始反面的ocr
+                                        switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+                                        isNeedCallBackBack = false;
+                                        isBackComplete = false;
+                                    }
+                                }
+                            });
+                        }
+                    });
+
+                }
+
+                @Override
+                public void onErrorResponse(int errorcode, String msg) {
+                    isIdentifying = false;
+                    if (!Machine.isNetworkOK(IDCardDetectActivity.this)){
+                        Toast.makeText(IDCardDetectActivity.this, "未能连接到互联网，请检查网络设置",
+                                Toast.LENGTH_SHORT).show();
+                    }
+                    Log.i(TAG, "onErrorResponse: "+msg);
+                    switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+
+                }
+            });
+
+            }
     }
 
 
