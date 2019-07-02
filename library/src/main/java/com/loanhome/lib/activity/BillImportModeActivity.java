@@ -12,19 +12,15 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
 
-import com.loanhome.creditcard.BuildConfig;
-import com.loanhome.creditcard.R;
-import com.loanhome.creditcard.bill.bean.ImportStateInfo;
-import com.loanhome.creditcard.bill.billimport.event.ImportEvent;
-import com.loanhome.creditcard.bill.view.LoadingDialog;
-import com.loanhome.creditcard.main.event.ReloadTabEvent;
-import com.loanhome.lib.BuildConfig;
+
 import com.loanhome.lib.R;
 import com.loanhome.lib.bean.ImportStateInfo;
 import com.loanhome.lib.bean.TaskInfo;
+import com.loanhome.lib.http.StatisticsController;
 import com.loanhome.lib.model.BillImportViewModel;
+import com.loanhome.lib.statistics.IStatisticsConsts;
 import com.loanhome.lib.util.AesUtil;
-import com.loanhome.lib.util.TestUtil;
+import com.loanhome.lib.util.Global;
 import com.loanhome.lib.view.LoadingDialog;
 import com.moxie.client.exception.MoxieException;
 import com.moxie.client.manager.MoxieCallBack;
@@ -34,13 +30,6 @@ import com.moxie.client.manager.MoxieSDK;
 import com.moxie.client.manager.MoxieSDKRunMode;
 import com.moxie.client.model.MxLoginCustom;
 import com.moxie.client.model.MxParam;
-import com.starbaba.account.controller.AccountContoller;
-import com.starbaba.statistics.IStatisticsConsts;
-import com.starbaba.statistics.StatisticsController;
-import com.starbaba.test.TestUtil;
-import com.starbaba.utils.AesUtil;
-
-import org.greenrobot.eventbus.EventBus;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -98,12 +87,12 @@ public class BillImportModeActivity extends AppCompatActivity {
                 Integer integer = info.getState();
                 mAfterAction = info.getAction();
                 if (integer != null && integer == BillImportViewModel.FETCH_SUCCESS) {
-                    if (AccountContoller.getInstance()
-                            .getUserInfo() != null) {
-                        AccountContoller.getInstance()
-                                .getUserInfo().setHasCard(true,BillImportModeActivity.this);}
-                    EventBus.getDefault()
-                            .post(new ReloadTabEvent());
+//                    if (AccountContoller.getInstance()
+//                            .getUserInfo() != null) {
+//                        AccountContoller.getInstance()
+//                                .getUserInfo().setHasCard(true,BillImportModeActivity.this);}
+//                    EventBus.getDefault()
+//                            .post(new ReloadTabEvent());
                     importSuccess();
 
                 } else if (integer != null && integer == BillImportViewModel.FETCH_PROGRESS) {
@@ -132,13 +121,13 @@ public class BillImportModeActivity extends AppCompatActivity {
 
         //0为未添卡，1为添卡
         String function = "0";
-        if (AccountContoller.getInstance()
-                .isLogin() && AccountContoller.getInstance()
-                .getUserInfo() != null) {
-            function = AccountContoller.getInstance()
-                    .getUserInfo().isHasCard(this) ? "1" : "0";
-        }
-        StatisticsController.getInstance().newRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_ADD_CARD_PAGE
+//        if (AccountContoller.getInstance()
+//                .isLogin() && AccountContoller.getInstance()
+//                .getUserInfo() != null) {
+//            function = AccountContoller.getInstance()
+//                    .getUserInfo().isHasCard(this) ? "1" : "0";
+//        }
+        StatisticsController.getInstance().newRequestStatics(BillImportModeActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_ADD_CARD_PAGE
                 , IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW
                 , IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_VIEW_ADD_CARD_PAGE, 0, function, null);
 
@@ -174,11 +163,13 @@ public class BillImportModeActivity extends AppCompatActivity {
     public void refreshMoxieData(String task, TaskInfo info) {
         MoxieSDK.getInstance().finish();
         final MxParam param = new MxParam();
-        param.setApiKey(TestUtil.isTestServer() ? BuildConfig.MOXIE_DEBUG_APPKEY : BuildConfig.MOXIE_APPKEY);
-        if (!AccountContoller.getInstance().isLogin()) {
-            AccountContoller.getInstance().gotoLogin();
-        }
-        param.setUserId(AccountContoller.getInstance().getAccessToken());
+//        param.setApiKey(TestUtil.isTestServer() ? BuildConfig.MOXIE_DEBUG_APPKEY : BuildConfig.MOXIE_APPKEY);
+        param.setApiKey(Global.moxieKey);
+//        if (!AccountContoller.getInstance().isLogin()) {
+//            AccountContoller.getInstance().gotoLogin();
+//        }
+//        param.setUserId(AccountContoller.getInstance().getAccessToken());
+//        param.setUserId(Global.getAccess_token());
         param.setTaskType(task);
         param.setCallbackTaskInfo(true);
         param.setQuitDisable(true);
@@ -192,7 +183,8 @@ public class BillImportModeActivity extends AppCompatActivity {
         } else {
             loginInfo.put("username", info.account);
         }
-        loginInfo.put("password", AesUtil.de(BuildConfig.KEY, info.password));
+//        loginInfo.put("password", AesUtil.de(BuildConfig.KEY, info.password));
+        loginInfo.put("password", AesUtil.en(Global.appKey, info.password));
         loginInfo.put(MxLoginCustom.LOGIN_PARAMS_K_SELECTED, MxParam.PARAM_COMMON_YES);
         loginCustom.setLoginType(info.loginTarget);
         //邮箱要用setLoginParams 否则会跳出页面
@@ -281,8 +273,8 @@ public class BillImportModeActivity extends AppCompatActivity {
 
 
     public void importFailed(){
-        EventBus.getDefault()
-                .post(new ImportEvent(ImportEvent.FAIL));
+//        EventBus.getDefault()
+//                .post(new ImportEvent(ImportEvent.FAIL));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -297,8 +289,8 @@ public class BillImportModeActivity extends AppCompatActivity {
     }
     public void importSuccess(){
 
-        EventBus.getDefault()
-                .post(new ImportEvent(ImportEvent.SUCCESS));
+//        EventBus.getDefault()
+//                .post(new ImportEvent(ImportEvent.SUCCESS));
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -343,7 +335,8 @@ public class BillImportModeActivity extends AppCompatActivity {
             object.put("login_type", loginType);
             object.put("login_target", loginTarget);
             object.put("username", account);
-            object.put("password", AesUtil.en(BuildConfig.KEY, password));
+//            object.put("password", AesUtil.en(BuildConfig.KEY, password));
+            object.put("password", AesUtil.en(Global.appKey, password));
             object.put("user_id", userId);
             object.put("task_type", taskType);
 
@@ -394,5 +387,6 @@ public class BillImportModeActivity extends AppCompatActivity {
         super.finish();
         overridePendingTransition(0,0);
     }
+
 }
 

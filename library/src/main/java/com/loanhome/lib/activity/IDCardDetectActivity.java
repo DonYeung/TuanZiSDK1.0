@@ -32,12 +32,15 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.loanhome.lib.R;
 import com.loanhome.lib.bean.IDCardFailInfo;
+import com.loanhome.lib.bean.IDCardInfo;
+import com.loanhome.lib.bean.IDCardResult;
 import com.loanhome.lib.http.RetrofitUtils4test;
 import com.loanhome.lib.http.StatisticsController;
 import com.loanhome.lib.listener.ExitConfirmDialogDismissListener;
 import com.loanhome.lib.listener.IDCardResultDialogDismissListener;
 import com.loanhome.lib.listener.IDCardVerifyFailDialogDismissListener;
 import com.loanhome.lib.listener.LivenessDialogDismissListener;
+import com.loanhome.lib.listener.VerifyResultCallback;
 import com.loanhome.lib.statistics.IStatisticsConsts;
 import com.loanhome.lib.util.ICamera;
 import com.loanhome.lib.util.Machine;
@@ -145,6 +148,9 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
     //反面预处理成功标志
     private boolean mIsBackShotDone = false;
 
+
+    private IDCardInfo idCardInfo = new IDCardInfo();
+    private static VerifyResultCallback mVerifyResultCallback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -282,21 +288,31 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
     }
 
     private void callBackData() {
-//        if (event == null) {
-//            return;
-//        }
-//        if (isNeedCallBackFront && isNeedCallBackBack && isFrontComplete && isBackComplete) {
-//            event.setSide(2);
-//        } else if (isNeedCallBackFront && isFrontComplete) {
-//            event.setSide(0);
-//        } else if (isNeedCallBackBack && isBackComplete) {
-//            event.setSide(1);
-//        } else {
-//            //取消身份证认证
-//            event.setSide(3);
-//        }
-//        EventBus.getDefault().post(event);
-//        finish();
+        if (mVerifyResultCallback == null) {
+            return;
+        }
+        if (isNeedCallBackFront && isNeedCallBackBack && isFrontComplete && isBackComplete) {
+            idCardInfo.setSide(2);
+            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"idCardName\":\""+idCardInfo.getIdCardName() + "\",\"idCardNumber\":\""+idCardInfo.getIdCardNumber() +"\",\"address\":\""+idCardInfo.getAddress() + "\",\"issueBy\":\""+idCardInfo.getIssuedBy() + "\",\"validDate\":\""+idCardInfo.getValidDate() +"\"}";
+            mVerifyResultCallback.onVerifySuccess(jsoncallback);
+
+        } else if (isNeedCallBackFront && isFrontComplete) {
+            idCardInfo.setSide(0);
+            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"idCardName\":\""+idCardInfo.getIdCardName() + "\",\"idCardNumber\":\""+idCardInfo.getIdCardNumber() +"\",\"address\":\""+idCardInfo.getAddress()+"\"}";
+            Log.i(TAG, "onDismiss: "+jsoncallback);
+            mVerifyResultCallback.onVerifySuccess(jsoncallback);
+
+        } else if (isNeedCallBackBack && isBackComplete) {
+            idCardInfo.setSide(1);
+            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"issueBy\":\""+idCardInfo.getIssuedBy() + "\",\"validDate\":\""+idCardInfo.getValidDate() +"\"}";
+            Log.i(TAG, "onDismiss: "+jsoncallback);
+            mVerifyResultCallback.onVerifySuccess(jsoncallback);
+        } else {
+            //取消身份证认证
+            idCardInfo.setSide(3);
+            mVerifyResultCallback.onVerifyCancel();
+        }
+        finish();
     }
 
     /**
@@ -942,6 +958,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                         }
 
                         callBackData();
+                        mVerifyResultCallback.onVerifyCancel();
                         doFinish();
 
                     }
@@ -964,6 +981,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
             }
 
             callBackData();
+            mVerifyResultCallback.onVerifyCancel();
             doFinish();
 
         }
@@ -1009,23 +1027,23 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         if (mIdSide == 0) {
             Log.i(TAG, "gotoVerify: 正面请求认证");
 
-            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<JSONObject>() {
+            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
 
                 @Override
-                public void onResponse(JSONObject response) {
+                public void onResponse(IDCardResult idCardResult) {
 
                     isIdentifying = false;
-                    Log.i(TAG, "onResponse: "+response.toString());
+                    Log.i(TAG, "onResponse: "+idCardResult.toString());
 
-                    boolean flag = response.optBoolean("flag");
+                    boolean flag = idCardResult.isFlag();
                     if (!flag){
-                        int errorType = response.optInt("error_type");
+//                        int errorType = idCardResult.get("error_type");
 
                         // TODO: 2019/2/28 正面失败是区分原因 埋点
-                        final String msg = response.optString("errorMsg");
-                        final int type = response.optInt("iconType");
-                        JSONArray jsonArray = response.optJSONArray("iconList");
-                        if (jsonArray == null ){
+                        final String msg = idCardResult.getErrorMsg();
+                        final int type = idCardResult.getIconType();
+                        List<IDCardResult.IconListBean> iconList = idCardResult.getIconList();
+                        if (iconList == null ){
                             if (msg != null && !TextUtils.isEmpty(msg)){
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -1045,7 +1063,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                             }
                             return;
                         }
-                        final List<IDCardFailInfo> failInfos = getFailInfo(jsonArray);
+                        final List<IDCardFailInfo> failInfos = getFailInfo(iconList);
 
                         runOnUiThread(new Runnable() {
                             @Override
@@ -1075,18 +1093,30 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                     }
                     /**识别成功*/
 
-
-                    JSONObject idCardMessage = response.optJSONObject("idCardMessage");
-                    final String name = idCardMessage.optString("idCardName");
-                    final String number = idCardMessage.optString("idCardNumber");
-                    final String address = idCardMessage.optString("address");
+                    String name = "";
+                    String number = "";
+                    String address = "";
+                    IDCardResult.IdCardMessageBean idCardMessage = idCardResult.getIdCardMessage();
+                    if (idCardMessage!=null ) {
+                         name = idCardMessage.getIdCardName();
+                         number = idCardMessage.getIdCardNumber();
+                         address = idCardMessage.getAddress();
+                    }
 
 //                    event.setIdCardName(name);
 //                    event.setIdCardNumber(number);
 //                    event.setAddress(address);
 //                    event.setFrontImages(Base64.encodeToString(bytes, Base64.DEFAULT));
+                    idCardInfo.setIdCardName(name);
+                    idCardInfo.setIdCardNumber(number);
+                    idCardInfo.setAddress(address);
+                    idCardInfo.setFrontImages(Base64.encodeToString(bytes, Base64.DEFAULT));
+
                     isNeedCallBackFront = true;
                     //弹窗提醒
+                    final String finalName = name;
+                    final String finalNumber = number;
+                    final String finalAddress = address;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -1100,9 +1130,9 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                     IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_POPUP,index
                                     , functionId, contentId,api_id, pPosition, "0", param2);
 
-                            dialog.setIdName(name);
-                            dialog.setIdNumber(number);
-                            dialog.setIdAddress(address);
+                            dialog.setIdName(finalName);
+                            dialog.setIdNumber(finalNumber);
+                            dialog.setIdAddress(finalAddress);
                             dialog.setIDCardResultDialogDismissListener(new IDCardResultDialogDismissListener() {
                                 @Override
                                 public void onDismiss(boolean isconfirm) {
@@ -1119,9 +1149,8 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                         //假如反面已经完成，则回调信息给页端
                                         if (isBackComplete){
                                             // 下一模块
+
                                             callBackData();
-
-
                                         } else {
                                             //假如反面没有完成，则开始反面ocr
                                             switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
@@ -1162,22 +1191,22 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         } else {//背面认证
             Log.i(TAG, "gotoVerify: 背面请求认证");
 
-            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<JSONObject>() {
+            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
 
                 @Override
-                public void onResponse(JSONObject response) {
+                public void onResponse(IDCardResult idCardResult) {
 
                     isIdentifying = false;
-                    Log.i(TAG, "onResponse: "+response.toString());
-                    boolean flag = response.optBoolean("flag");
+                    Log.i(TAG, "onResponse: "+idCardResult.toString());
+                    boolean flag = idCardResult.isFlag();
                     if (!flag) {
 
 
 
-                        final String errorMsg = response.optString("errorMsg");
-                        final int type = response.optInt("iconType");
-                        JSONArray jsonArray = response.optJSONArray("iconList");
-                        if (jsonArray == null){
+                        final String errorMsg = idCardResult.getErrorMsg();
+                        final int type = idCardResult.getIconType();
+                        List<IDCardResult.IconListBean> iconList = idCardResult.getIconList();
+                        if (iconList == null){
                             if (errorMsg != null && !TextUtils.isEmpty(errorMsg)){
                                 runOnUiThread(new Runnable() {
                                     @Override
@@ -1196,7 +1225,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                 });
                             }
                         }
-                        final List<IDCardFailInfo> failInfos = getFailInfo(jsonArray);
+                        final List<IDCardFailInfo> failInfos = getFailInfo(iconList);
 
                         runOnUiThread(new Runnable() {
                             @Override
@@ -1226,14 +1255,24 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                     }
 
 
-                    JSONObject idCardMessage = response.optJSONObject("idCardMessage");
-                    final String validDate = idCardMessage.optString("validDate");
-                    final String issueBy = idCardMessage.optString("issuedBy");
+                    IDCardResult.IdCardMessageBean idCardMessage = idCardResult.getIdCardMessage();
+                    String validDate ="";
+                    String issueBy ="";
+                    if (idCardMessage!= null ) {
+                        validDate = idCardMessage.getValidDate();
+                        issueBy = idCardMessage.getIssuedBy();
+                    }
+                    idCardInfo.setIssuedBy(validDate);
+                    idCardInfo.setValidDate(issueBy);
+                    idCardInfo.setBackImages(Base64.encodeToString(bytes, Base64.DEFAULT));
+
 //                    event.setBackImages(Base64.encodeToString(bytes, Base64.DEFAULT));
 //                    event.setValidDate(validDate);
 //                    event.setIssueBy(issueBy);
                     isNeedCallBackBack = true;
                     //弹窗提醒
+                    final String finalIssueBy = issueBy;
+                    final String finalValidDate = validDate;
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -1248,8 +1287,8 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                     IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_POPUP,index
                                     , functionId, contentId, api_id,pPosition, "1", param2);
 
-                            dialog.setIdIssueBy(issueBy);
-                            dialog.setIdValidDate(validDate);
+                            dialog.setIdIssueBy(finalIssueBy);
+                            dialog.setIdValidDate(finalValidDate);
                             dialog.setIDCardResultDialogDismissListener(new IDCardResultDialogDismissListener() {
                                 @Override
                                 public void onDismiss(boolean isconfirm) {
@@ -1266,7 +1305,6 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                         if (isFrontComplete){
                                             //下一模块
                                             callBackData();
-
                                         } else {
                                             //假如正面没有完成，则开始正面的ocr
                                             switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT);
@@ -1353,19 +1391,18 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         }
     }
 
-    private List<IDCardFailInfo> getFailInfo(JSONArray jsonArray) {
+    private List<IDCardFailInfo> getFailInfo(List<IDCardResult.IconListBean> list) {
         List<IDCardFailInfo> infos = new ArrayList<>();
-        for (int i = 0 ; i < jsonArray.length() ; i++){
+        for (int i = 0 ; i < list.size() ; i++){
             IDCardFailInfo info = new IDCardFailInfo();
-            try {
-                JSONObject jsonObject = (JSONObject) jsonArray.get(i);
-                info.setIcon(jsonObject.optString("icon"));
-                info.setMsg(jsonObject.optString("iconMsg"));
-                infos.add(info);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
+            info.setIcon(list.get(i).getIcon());
+            info.setMsg(list.get(i).getIconMsg());
+            infos.add(info);
         }
         return infos;
+    }
+
+    public static void setVerifyResultCallback(VerifyResultCallback verifyResultCallback) {
+        mVerifyResultCallback = verifyResultCallback;
     }
 }

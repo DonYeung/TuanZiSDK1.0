@@ -31,7 +31,7 @@
             android:layout_marginTop="2dp"
             android:textSize="10sp"
             android:textColor="#666666"
-            android:layout_marginBottom="@dimen/dimen_8dp"/>
+            android:layout_marginBottom="@dimen/dp_8"/>
 
     </LinearLayout>
 
@@ -60,7 +60,7 @@
             android:layout_marginTop="2dp"
             android:textSize="10sp"
             android:textColor="#666666"
-            android:layout_marginBottom="@dimen/dimen_8dp"/>
+            android:layout_marginBottom="@dimen/dp_8"/>
 
     </LinearLayout>
 
@@ -89,7 +89,7 @@
             android:layout_marginTop="2dp"
             android:textSize="10sp"
             android:textColor="#666666"
-            android:layout_marginBottom="@dimen/dimen_8dp"/>
+            android:layout_marginBottom="@dimen/dp_8"/>
 
     </LinearLayout>
 

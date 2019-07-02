@@ -10,13 +10,16 @@ import com.loanhome.lib.BuildConfig;
 import com.loanhome.lib.bean.BankCardResult;
 import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.IDCardResult;
+import com.loanhome.lib.bean.StatisticResult;
 import com.loanhome.lib.bean.UserType;
+import com.loanhome.lib.http.cert.TrustAllHostnameVerifier;
 import com.loanhome.lib.util.Constants;
 import com.loanhome.lib.util.TestUtil;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -70,12 +73,17 @@ public class RetrofitUtils4test {
             okHttpClient = new OkHttpClient.Builder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .addInterceptor(new BaseInterceptor4Phead())
-                    .addInterceptor(httpLoggingInterceptor);
+                    .addInterceptor(httpLoggingInterceptor)
+                    .sslSocketFactory(HttpsUtils.createSSLSocketFactory())
+                    .hostnameVerifier(new TrustAllHostnameVerifier());
+            ;
         } else {
             okHttpClient = new OkHttpClient.Builder()
                     .connectTimeout(10, TimeUnit.SECONDS)
                     .addInterceptor(new BaseInterceptor4Phead())
-                    .addInterceptor(httpLoggingInterceptor);
+                    .addInterceptor(httpLoggingInterceptor)
+                    .sslSocketFactory(HttpsUtils.createSSLSocketFactory())
+                    .hostnameVerifier(new TrustAllHostnameVerifier());
         }
 
         Retrofit retrofit = new Retrofit.Builder()
@@ -194,9 +202,10 @@ public class RetrofitUtils4test {
             e.printStackTrace();
         }
         JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
-        return apiService.uploadUserInfo(body);
+        Map<String,String> map = new HashMap<String,String>();
+        map.put("phead",object.toString());
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.uploadUserInfo(map);
     }
 
 
@@ -218,9 +227,10 @@ public class RetrofitUtils4test {
             e.printStackTrace();
         }
         JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
-        return apiService.fetchTypeState(body);
+        Map<String,String> map = new HashMap<String,String>();
+        map.put("phead",object.toString());
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.fetchTypeState(map);
     }
 
     /**
@@ -232,11 +242,11 @@ public class RetrofitUtils4test {
      * @param functionid
      * @param contentid
      */
-    public Observable<HttpResult> newOCRRequestStatics(String page,String logType, String ckModule, String index, String functionid, String contentid,String api_id,
-                                                         String pPosition, String param1, String param2) {
+    public Observable<StatisticResult> newOCRRequestStatics(String page, String logType, String ckModule, String index, String functionid, String contentid, String api_id,
+                                                            String pPosition, String param1, String param2) {
 
         // TODO: 2019/6/28
-        JSONObject data = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        JSONObject data = BaseInterceptor4Phead.getInstance().getPheadJson();
         JSONObject newdata = new JSONObject();
 
         try {
@@ -266,6 +276,42 @@ public class RetrofitUtils4test {
         return apiService.newOCRRequestStatics(body);
     }
 
+    /**
+     * 新的统计接口
+     * @param page
+     * @param logType
+     * @param ckModule
+     * @param index
+     * @param functionid
+     * @param contentid
+     */
+    public Observable<StatisticResult> newRequestStatics(String page,String logType, String ckModule, int index, String functionid, String contentid) {
+
+        // TODO: 2019/6/28
+        JSONObject data = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+
+        try {
+            data.put("page",page);
+            data.put("position", index == -1 ? "": index);
+            data.put("log_type", logType);
+            data.put("ck_module",ckModule);
+            data.put("functionid", functionid == null ? "" : functionid);
+            data.put("contentid", contentid == null ? "" : contentid);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(data);
+
+        Map<String,String> map = new HashMap<String,String>();
+        map.put("phead",object.toString());
+
+//        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.newRequestStatics(map);
+    }
 
     /**
      * OCR请求接口

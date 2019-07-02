@@ -59,7 +59,7 @@
 
     <!--<include layout="@layout/view_toast" />-->
 
-    <com.megvii.idcardlib.view.IDCardGuideH
+    <com.loanhome.lib.view.IDCardGuideH
         android:id="@+id/idcardscan_cn_layout_guide_h"
         android:layout_width="match_parent"
         android:layout_height="match_parent"

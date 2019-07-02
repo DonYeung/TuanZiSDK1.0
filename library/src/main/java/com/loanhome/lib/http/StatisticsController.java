@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.Log;
 
 import com.loanhome.lib.bean.HttpResult;
+import com.loanhome.lib.bean.StatisticResult;
 
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -45,27 +46,28 @@ public class StatisticsController {
                 , contentid, api_id, pPosition, param1, param2)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<HttpResult>() {
+                .subscribe(new Observer<StatisticResult>() {
                     @Override
                     public void onSubscribe(Disposable d) {
 
                     }
 
                     @Override
-                    public void onNext(HttpResult httpResult) {
-                        if (httpResult.getStatus()!= STATUS_SUCCESS) {
-                            Log.i(TAG, "== 上传统计失败 ==");
+                    public void onNext(StatisticResult result) {
+                        Log.i(TAG, "onNext: "+result.getResult().getStatus());
+                        if (result.getResult().getStatus()!= STATUS_SUCCESS) {
+                            Log.i(TAG, "==新OCR统计接口----上传统计失败 ==");
                             return;
                         }
                         else {
-                            Log.i(TAG, "== 上传统计成功 ==");
+                            Log.i(TAG, "==新OCR统计接口----上传统计成功 ==");
                         }
 
                     }
 
                     @Override
                     public void onError(Throwable e) {
-                        Log.i(TAG, "== 上传统计失败 ==");
+                        Log.i(TAG, "== 新OCR统计接口----上传统计失败 ==");
 
                     }
 
@@ -75,6 +77,53 @@ public class StatisticsController {
                     }
                 });
     }
+
+    /**
+     * 新的统计接口
+     * @param context
+     * @param page
+     * @param logType
+     * @param ckModule
+     * @param index
+     * @param functionid
+     * @param contentid
+     */
+    public void newRequestStatics(final Context context, String page,String logType, String ckModule, int index, String functionid, String contentid) {
+        RetrofitUtils4test.getInstance(context).newRequestStatics(page, logType, ckModule, index, functionid, contentid)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<StatisticResult>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(StatisticResult result) {
+                        if (result.getResult().getStatus()!= STATUS_SUCCESS) {
+                            Log.i(TAG, "== 新的统计接口----上传统计失败 ==");
+                            return;
+                        }
+                        else {
+                            Log.i(TAG, "== 新的统计接口----上传统计成功 ==");
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "== 新的统计接口----上传统计失败 ==");
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
 
 
 }

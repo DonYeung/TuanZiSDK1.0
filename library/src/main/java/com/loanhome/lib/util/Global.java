@@ -5,7 +5,14 @@ import org.json.JSONObject;
 
 public class Global {
 
-    private static Global mInfo;
+    public static Global mInfo;
+
+    public static String pheadjson;
+    public static String appKey ;
+    public static String moxieKey ;
+
+    public static String uuid;
+
     public static boolean IsTestVersion = true;	//是否测试版本，true为测试服务器
 
     public static boolean IsDebug = true;	//是否debug模式，true为Debug模式
@@ -67,8 +74,8 @@ public class Global {
     private String access_token;
     private String cityid;
     private String gcityid;
-    private double lng;
-    private double lat;
+    private long lng;
+    private long lat;
     private String prdid;
 
     public String getPversion() {
@@ -263,19 +270,19 @@ public class Global {
         this.gcityid = gcityid;
     }
 
-    public double getLng() {
+    public long getLng() {
         return lng;
     }
 
-    public void setLng(double lng) {
+    public void setLng(long lng) {
         this.lng = lng;
     }
 
-    public double getLat() {
+    public long getLat() {
         return lat;
     }
 
-    public void setLat(double lat) {
+    public void setLat(long lat) {
         this.lat = lat;
     }
 
@@ -330,19 +337,6 @@ public class Global {
     }
 
     /**
-     * 把accountProductInfo转成jsonobject字符串的方法
-     *
-     * @param global
-     * @return
-     */
-    public static String writeProductInfoToJsonString(Global global) {
-        if (global == null) {
-            return null;
-        }
-        return writeProductInfoToJSON(global).toString();
-    }
-
-    /**
      * 从jsonobject解释accountProductInfo的方法
      *
      * @param json
@@ -377,19 +371,19 @@ public class Global {
         global.setAccess_token(json.optString("access_token"));
         global.setCityid(json.optString("cityid"));
         global.setGcityid(json.optString("gcityid"));
-        global.setLng(json.optDouble("lng"));
-        global.setLat(json.optDouble("lat"));
+        global.setLng(json.optLong("lng"));
+        global.setLat(json.optLong("lat"));
         global.setPrdid(json.optString("prdid"));
 
+        mInfo = global ;
+//        setGlobalInfo(global);
 
-        setGlobalInfo(global);
-
-        return global;
+        return mInfo;
     }
 
-    public static void setGlobalInfo(Global globalInfo){
-        mInfo = globalInfo;
-    }
+//    public static void setGlobalInfo(Global globalInfo){
+//        mInfo = globalInfo;
+//    }
     public static Global getGlobalInfo() {
         return mInfo;
     }

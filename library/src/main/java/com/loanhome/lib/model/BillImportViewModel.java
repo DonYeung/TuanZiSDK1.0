@@ -27,35 +27,35 @@ public class BillImportViewModel extends ViewModel {
     }
 
     public void fetchTaskState(String type, String taskId, String mode){
-        BillImportController
-                .getInstance()
-                .fetchTypeState(type, taskId, mode, new BillImportController.OnCallbackListener() {
-                    @Override
-                    public void onSuccess() {
-                    }
-
-                    @Override
-                    public void onSuccess(String action) {
-                        ImportStateInfo info = new ImportStateInfo();
-                        info.setState(FETCH_SUCCESS);
-                        info.setAction(action);
-                        stateLiveData.setValue(info);
-                    }
-
-                    @Override
-                    public void onProgress() {
-                        ImportStateInfo info = new ImportStateInfo();
-                        info.setState(FETCH_PROGRESS);
-                        stateLiveData.setValue(info);
-                    }
-
-                    @Override
-                    public void onFailed() {
-                        ImportStateInfo info = new ImportStateInfo();
-                        info.setState(FETCH_FAIL);
-                        stateLiveData.setValue(info);
-                    }
-                });
+//        BillImportController
+//                .getInstance()
+//                .fetchTypeState(type, taskId, mode, new BillImportController.OnCallbackListener() {
+//                    @Override
+//                    public void onSuccess() {
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(String action) {
+//                        ImportStateInfo info = new ImportStateInfo();
+//                        info.setState(FETCH_SUCCESS);
+//                        info.setAction(action);
+//                        stateLiveData.setValue(info);
+//                    }
+//
+//                    @Override
+//                    public void onProgress() {
+//                        ImportStateInfo info = new ImportStateInfo();
+//                        info.setState(FETCH_PROGRESS);
+//                        stateLiveData.setValue(info);
+//                    }
+//
+//                    @Override
+//                    public void onFailed() {
+//                        ImportStateInfo info = new ImportStateInfo();
+//                        info.setState(FETCH_FAIL);
+//                        stateLiveData.setValue(info);
+//                    }
+//                });
     }
 
     public MutableLiveData<Integer> upLoadingAccount(JSONObject info, String taskId) {
@@ -67,29 +67,29 @@ public class BillImportViewModel extends ViewModel {
     }
 
     private void upLoadingAccountInfo(JSONObject account, String taskId){
-        BillImportController
-                .getInstance()
-                .uploadUserInfo(account, taskId, new BillImportController.OnCallbackListener() {
-                    @Override
-                    public void onSuccess() {
-                        upLoadingLiveData.setValue(FETCH_SUCCESS);
-                    }
-
-                    @Override
-                    public void onFailed() {
-                        upLoadingLiveData.setValue(FETCH_FAIL);
-                    }
-
-                    @Override
-                    public void onSuccess(String action) {
-
-                    }
-
-                    @Override
-                    public void onProgress() {
-                        upLoadingLiveData.setValue(FETCH_PROGRESS);
-                    }
-                });
+//        BillImportController
+//                .getInstance()
+//                .uploadUserInfo(account, taskId, new BillImportController.OnCallbackListener() {
+//                    @Override
+//                    public void onSuccess() {
+//                        upLoadingLiveData.setValue(FETCH_SUCCESS);
+//                    }
+//
+//                    @Override
+//                    public void onFailed() {
+//                        upLoadingLiveData.setValue(FETCH_FAIL);
+//                    }
+//
+//                    @Override
+//                    public void onSuccess(String action) {
+//
+//                    }
+//
+//                    @Override
+//                    public void onProgress() {
+//                        upLoadingLiveData.setValue(FETCH_PROGRESS);
+//                    }
+//                });
     }
 
 
