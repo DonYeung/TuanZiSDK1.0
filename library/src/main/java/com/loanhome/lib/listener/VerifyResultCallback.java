@@ -1,10 +1,9 @@
 package com.loanhome.lib.listener;
 
 /**
- * @author liaopeijian
- * @Date 2017/12/11
+ * 身份证OCR 回调接口
+ * @Description Created by Don on 2019/7/2
  */
-
 public interface VerifyResultCallback {
     int AUTH_FAIL = 0;
     int VERIFY_FAIL = 1;

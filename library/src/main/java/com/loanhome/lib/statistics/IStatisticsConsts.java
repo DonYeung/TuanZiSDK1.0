@@ -149,6 +149,8 @@ public interface IStatisticsConsts {
 			String CK_MODULE_OCR_ID_REQUEST = "ocr_id_request";
 
 			String CK_MODULE_OCR_ASKCAMERA = "ocr_ask_camera";
+			String CK_MODULE_OCR_FILP = "ocr_flip";
+			String CK_MODULE_OCR_FILP_OK = "ocr_flip_ok";
 			String CK_MODULE_OCR_CLOSE = "click_close";
 			String CK_MODULE_OCR_SHOT = "ocr_shot";
 			String CK_MODULE_OCR_POPUP = "ocr_popup";
@@ -199,6 +201,7 @@ public interface IStatisticsConsts {
 			String PAGE_OCR_START = "ocr_start";
 
 			String PAGE_OCR_SHOT = "ocr_shot";
+			String PAGE_OCR_FILP = "ocr_flip";
 			String PAGE_OCR_POPUP = "ocr_popup";
 			String PAGE_OCR_CONFIRM = "ocr_confirm";
 			String PAGE_OCR_RETRY = "ocr_retry";

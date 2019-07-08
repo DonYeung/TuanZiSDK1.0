@@ -22,4 +22,28 @@
     <string name="livenessExitLeftPromptText">取消</string>
     <string name="livenessExitRightPromptText">确认</string>
     <string name="livenessHomePromptVerticalText">请您拿起手机，保持手机垂直</string>
+
+
+    <string name="remind_idcard_quality_failed_1">没有检测到身份证</string>
+    <string name="remind_idcard_quality_failed_2">请将身份证置于提示框内</string>
+    <string name="remind_idcard_quality_failed_2_1">请再次对齐线框</string>
+    <string name="remind_idcard_quality_failed_3">清晰度不足，请点击屏幕对焦</string>
+    <string name="remind_idcard_quality_failed_4">身份证存在光斑，请调整拍摄位置</string>
+    <string name="remind_idcard_quality_failed_5">身份证存在阴影，请调整拍摄位置</string>
+    <string name="remind_idcard_quality_failed_6">请翻到人像面进行识别</string>
+    <string name="remind_idcard_quality_failed_7">请翻到国徽面进行识别</string>
+    <string name="remind_idcard_quality_failed_8">请摆正身份证进行识别</string>
+    <string name="remind_idcard_quality_failed_9">识别出了些小问题</string>
+
+
+    <string name="livenessPreFailText1">认证出了点小问题，请稍后重试</string>
+    <string name="livenessPreFailText2">暂不支持该手机进行认证</string>
+    <string name="livenessPreFailText3">验证失败，请重启设备后重试</string>
+    <string name="livenessPreFailText4">未能连接互联网，请检查WiFi或移动网络是否打开</string>
+    <string name="livenessPreFailText5">请开启相机权限后重试</string>
+    <string name="livenessPreFailText6">相机启动失败，请确认摄像头功能完好</string>
+    <string name="livenessPreFailText7">无法启动识别，请稍后重试</string>
+    <string name="livenessPreFailText8">请开启读写SD卡权限后重试</string>
+    <string name="livenessPreFailText9">认证失败，请重试</string>
+    <string name="livenessPreFailText10">长时间未操作，请重试</string>
 </resources>

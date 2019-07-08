@@ -7,6 +7,9 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocketFactory;
 import javax.net.ssl.TrustManager;
 
+/**
+ * Https工具类
+ */
 public class HttpsUtils {
     @SuppressLint("TrulyRandom")
     public static SSLSocketFactory createSSLSocketFactory() {

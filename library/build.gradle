@@ -64,4 +64,5 @@ dependencies {
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
     implementation "android.arch.lifecycle:runtime:$lifecycle_version"
     annotationProcessor "android.arch.lifecycle:compiler:$lifecycle_version"
+    implementation files('libs/meglive_still.aar')
 }

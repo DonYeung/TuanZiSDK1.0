@@ -13,6 +13,10 @@ import io.reactivex.schedulers.Schedulers;
 
 import static com.loanhome.lib.http.HttpGlobal.STATUS_SUCCESS;
 
+/**
+ * 统计请求管理类
+ * @Description Created by Don on 2019/7/2
+ */
 public class StatisticsController {
     private static final String TAG = "StatisticsController";
     public static StatisticsController sIns;
@@ -39,10 +43,10 @@ public class StatisticsController {
      * @param functionid
      * @param contentid
      */
-    public void newOCRRequestStatics(final Context context, String page, String logType, String ckModule, String index,
+    public void newOCRRequestStatics(String page, String logType, String ckModule, String index,
                                      String functionid, String contentid, String api_id,
                                      String pPosition, String param1, String param2) {
-        RetrofitUtils4test.getInstance(context).newOCRRequestStatics(page, logType, ckModule, index, functionid
+        RetrofitUtils4test.getInstance().newOCRRequestStatics(page, logType, ckModule, index, functionid
                 , contentid, api_id, pPosition, param1, param2)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -80,7 +84,6 @@ public class StatisticsController {
 
     /**
      * 新的统计接口
-     * @param context
      * @param page
      * @param logType
      * @param ckModule
@@ -88,8 +91,8 @@ public class StatisticsController {
      * @param functionid
      * @param contentid
      */
-    public void newRequestStatics(final Context context, String page,String logType, String ckModule, int index, String functionid, String contentid) {
-        RetrofitUtils4test.getInstance(context).newRequestStatics(page, logType, ckModule, index, functionid, contentid)
+    public void newRequestStatics(String page,String logType, String ckModule, int index, String functionid, String contentid) {
+        RetrofitUtils4test.getInstance().newRequestStatics(page, logType, ckModule, index, functionid, contentid)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<StatisticResult>() {

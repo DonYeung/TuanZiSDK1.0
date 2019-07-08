@@ -429,4 +429,9 @@
     <dimen name="sp_42">42sp</dimen>
     <dimen name="sp_48">48sp</dimen>
 
+    <dimen name="livenessHomePromptSize">20sp</dimen>
+    <dimen name="livenessExitTitlePromptSize">18sp</dimen>
+    <dimen name="livenessExitLeftPromptSize">18sp</dimen>
+    <dimen name="livenessExitRightPromptSize">18sp</dimen>
+
 </resources>

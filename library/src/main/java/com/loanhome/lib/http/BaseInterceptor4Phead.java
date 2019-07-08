@@ -92,13 +92,13 @@ public class BaseInterceptor4Phead implements Interceptor {
     public  JSONObject getPheadJson() {
         // TODO: 2019/6/28
 
-//        JSONObject pheadJson = Global.writeProductInfoToJSON(Global.getGlobalInfo());
-        JSONObject pheadJson = null;
-        try {
-            pheadJson = new JSONObject(Global.pheadjson);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
+        JSONObject pheadJson = Global.writeProductInfoToJSON(Global.mInfo);
+//        JSONObject pheadJson = null;
+//        try {
+//            pheadJson = new JSONObject(Global.pheadjson);
+//        } catch (JSONException e) {
+//            e.printStackTrace();
+//        }
         return pheadJson;
     }
 

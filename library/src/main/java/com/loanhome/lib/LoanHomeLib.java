@@ -2,6 +2,7 @@ package com.loanhome.lib;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.util.Log;
 
 import com.loanhome.lib.util.Global;
 
@@ -14,6 +15,7 @@ import org.json.JSONObject;
  * 通过getInstance()方法取得其对象
  */
 public class LoanHomeLib {
+    private static final String TAG = "LoanHomeLib";
     private static LoanHomeLib mInstance;
     private static Context mContext;
 
@@ -198,19 +200,14 @@ public class LoanHomeLib {
             if (TextUtils.isEmpty(loanHomeLib.pheadjson)){
                 throw new IllegalStateException("pheadjson不能为空");// 线程安全
             }
-//            try {
-//                JSONObject jsonObject = new JSONObject(loanHomeLib.pheadjson);
-//                Global.parseFromJSONObject(jsonObject);
-//            } catch (JSONException e) {
-//                e.printStackTrace();
-//            }
             Global.pheadjson = loanHomeLib.pheadjson;
             try {
                 JSONObject jsonObject = new JSONObject(loanHomeLib.pheadjson);
-                Global.parseFromJSONObject(jsonObject);
+                Global.mInfo = Global.parseFromJSONObject(jsonObject);
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            Log.i(TAG, "build getAccess_token: "+Global.mInfo.getAccess_token().toString());
             Global.appKey = loanHomeLib.appKey;
             Global.moxieKey = loanHomeLib.moxieKey;
             Global.uuid = loanHomeLib.uuid;

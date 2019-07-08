@@ -12,9 +12,12 @@ import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.Parameters;
 import android.view.Surface;
+import android.view.SurfaceHolder;
+import android.view.WindowManager;
 import android.widget.RelativeLayout;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -40,11 +43,13 @@ public class ICamera {
 	/**
 	 * 打开相机
 	 */
-	public Camera openCamera(Activity activity) {
+	public Camera openCamera(Context context) {
 		try {
-			screenWidth = activity.getWindowManager().getDefaultDisplay()
+			WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+			screenWidth = windowManager.getDefaultDisplay()
 					.getWidth();
-			screenHeight = activity.getWindowManager().getDefaultDisplay()
+			screenHeight = windowManager.getDefaultDisplay()
 					.getHeight();
 			mCamera = Camera.open(cameraId);
 			CameraInfo cameraInfo = new CameraInfo();
@@ -60,7 +65,7 @@ public class ICamera {
 					.contains(Parameters.FOCUS_MODE_CONTINUOUS_VIDEO)) {
 				params.setFocusMode(Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
 			}
-			mCamera.setDisplayOrientation(getCameraAngle(activity));
+			mCamera.setDisplayOrientation(getCameraAngle(context));
 			mCamera.setParameters(params);
 			return mCamera;
 		} catch (Exception e) {
@@ -68,6 +73,15 @@ public class ICamera {
 		}
 	}
 
+	public void setPreviewDisplay(SurfaceHolder holder){
+		if (mCamera != null) {
+			try {
+				mCamera.setPreviewDisplay(holder);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+	}
 	
 	public void autoFocus() {
 		try {
@@ -130,7 +144,6 @@ public class ICamera {
 			e.printStackTrace();
 		}
 	}
-
 	public void closeCamera() {
 		try {
 			if (mCamera != null) {
@@ -268,11 +281,13 @@ public class ICamera {
 	/**
 	 * 获取照相机旋转角度
 	 */
-	public int getCameraAngle(Activity activity) {
+	public int getCameraAngle(Context context) {
 		int rotateAngle = 90;
 		CameraInfo info = new CameraInfo();
 		Camera.getCameraInfo(cameraId, info);
-		int rotation = activity.getWindowManager().getDefaultDisplay()
+		WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+
+		int rotation = windowManager.getDefaultDisplay()
 				.getRotation();
 		int degrees = 0;
 		switch (rotation) {

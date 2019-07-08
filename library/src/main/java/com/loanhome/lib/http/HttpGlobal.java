@@ -1,10 +1,6 @@
 package com.loanhome.lib.http;
 
-import android.os.Environment;
-
 import com.loanhome.lib.util.TestUtil;
-
-import java.io.File;
 
 /**
  * @Description TODO
@@ -33,6 +29,8 @@ public class HttpGlobal {
         static String LOAN_ACCOUNT_TOOL = "loan_account_tool";
 
         static String LOAN_SERVICE= "loan_service";
+
+        static String LOAN_API= "loan-api";
 
     }
     interface Net {

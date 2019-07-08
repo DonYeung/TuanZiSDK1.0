@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:background="@drawable/confirm_dialog_bg"
+    android:layout_marginRight="35dp"
+    android:layout_marginLeft="35dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp">
+
+        <TextView
+            android:id="@+id/tv_filp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerInParent="true"
+            android:gravity="center_horizontal"
+            android:text="请将身份证翻转至国徽面"
+            android:textColor="#666666"
+            android:textSize="16sp"/>
+
+    </RelativeLayout>
+
+
+    <ImageView
+        android:id="@+id/iv_filp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="49dp"
+        android:layout_marginRight="49dp"
+        android:layout_marginTop="10dp"
+        android:src="@drawable/filp_pos"/>
+
+    <TextView
+        android:id="@+id/tv_confirm"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_48"
+        android:text="知道了"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/dp_16"
+        android:layout_marginRight="@dimen/dp_16"
+        android:layout_marginLeft="@dimen/dp_16"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/liveness_result_operation_bg"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/dp_16"/>
+
+</LinearLayout>

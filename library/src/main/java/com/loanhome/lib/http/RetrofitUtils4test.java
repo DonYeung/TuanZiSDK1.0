@@ -1,28 +1,24 @@
 package com.loanhome.lib.http;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.Build;
 import android.util.Base64;
 import android.util.Log;
-
 import com.loanhome.lib.BuildConfig;
 import com.loanhome.lib.bean.BankCardResult;
+import com.loanhome.lib.bean.BizTokenResult;
 import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.IDCardResult;
 import com.loanhome.lib.bean.StatisticResult;
-import com.loanhome.lib.bean.UserType;
+import com.loanhome.lib.bean.TypeStateResult;
+import com.loanhome.lib.bean.UserInfoResult;
 import com.loanhome.lib.http.cert.TrustAllHostnameVerifier;
-import com.loanhome.lib.util.Constants;
 import com.loanhome.lib.util.TestUtil;
-
 import org.json.JSONException;
 import org.json.JSONObject;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
 import io.reactivex.Observable;
 import io.reactivex.Observer;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -34,7 +30,6 @@ import okhttp3.RequestBody;
 import retrofit2.Retrofit;
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory;
 import retrofit2.converter.gson.GsonConverterFactory;
-
 import static com.loanhome.lib.http.HttpGlobal.STATUS_BUSINESS_HANDLE_ERROR;
 import static com.loanhome.lib.http.HttpGlobal.STATUS_OVERDUE;
 import static com.loanhome.lib.http.HttpGlobal.STATUS_REGISTER;
@@ -51,10 +46,10 @@ public class RetrofitUtils4test {
     private final static int HANDLE = 0;
     private final static int SHANDLE = TestUtil.isDebug() ? 0 : 1;
 
-    public static RetrofitUtils4test getInstance(Context c) {
+    public static RetrofitUtils4test getInstance() {
         if (mInstance == null) {
             mInstance = new RetrofitUtils4test();
-            mContext = c.getApplicationContext();
+//            mContext = c.getApplicationContext();
         }
         return mInstance;
     }
@@ -105,13 +100,6 @@ public class RetrofitUtils4test {
         return TestUtil.isTestServer() ? HttpGlobal.Net.SEVER_ADDRESS_LOCAL : HttpGlobal.Net.SEVER_ADDRESS;
     }
 
-    /**
-     * 请求获取激活时用户类型的方法
-     */
-    public Observable<UserType> getUserType() {
-        return apiService.getUserType();
-    }
-
 
     /**
      * OCR请求接口
@@ -119,13 +107,14 @@ public class RetrofitUtils4test {
      * @param mark
      * @return
      */
-    public Observable<IDCardResult> getOCRResult(byte[] data
+    public Observable<IDCardResult> getOCRResult(byte[] data,byte[] imageRef
             ,int mark) {
           // TODO: 2019/6/28
         JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
         try {
             phead.put("mark",mark);
             phead.put("image", Base64.encodeToString(data, Base64.DEFAULT));
+            phead.put("imageRef", Base64.encodeToString(imageRef, Base64.DEFAULT));
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -186,13 +175,53 @@ public class RetrofitUtils4test {
         return apiService.getBankOCRResult(body);
     }
 
+
+    /**
+     * biztoken
+     * @param data
+     * @return
+     */
+    public Observable<BizTokenResult> getBizToken(String name,String number) {
+        // TODO: 2019/6/28
+        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        try {
+            phead.put("name", name);
+            phead.put("idCardNum", number);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.getBizToken(body);
+    }
+
+    /**
+     * verify
+     * @param data
+     * @return
+     */
+    public Observable<HttpResult> LivenessVerify(String token, byte[] data) {
+        // TODO: 2019/6/28
+        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        try {
+            phead.put("token", token);
+            phead.put("imageBest",  Base64.encodeToString(data, Base64.DEFAULT));
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
+
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.LivenessVerify(body);
+    }
     /**
      * 上传用户信息，魔蝎sdk后请求30接口使用
      * @param account
      * @param taskId
      * @return
      */
-    public Observable<HttpResult> uploadUserInfo(final JSONObject account, String taskId) {
+    public Observable<UserInfoResult> uploadUserInfo(final JSONObject account, String taskId) {
         // TODO: 2019/6/28
         JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
         try {
@@ -216,7 +245,7 @@ public class RetrofitUtils4test {
      * @param mode
      * @return
      */
-    public Observable<HttpResult> fetchTypeState(final String type, String taskId, String mode) {
+    public Observable<TypeStateResult> fetchTypeState(final String type, String taskId, String mode) {
         // TODO: 2019/6/28
         JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
         try {
@@ -319,8 +348,8 @@ public class RetrofitUtils4test {
      * @param mark
      * @param listener
      */
-    public void getOCRResultmain(byte[] data,int mark,final ResponseListener listener){
-        RetrofitUtils4test.getInstance(mContext).getOCRResult(data,mark)
+    public void getOCRResultmain(byte[] data,byte[] imageRef,int mark,final ResponseListener listener){
+        RetrofitUtils4test.getInstance().getOCRResult(data,imageRef,mark)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<IDCardResult>() {
@@ -364,7 +393,7 @@ public class RetrofitUtils4test {
             , String name
             , String number
             , String delta,final ResponseListener listener){
-        RetrofitUtils4test.getInstance(mContext).upLoadingLivenessInfo_New(map,name,number,delta)
+        RetrofitUtils4test.getInstance().upLoadingLivenessInfo_New(map,name,number,delta)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<HttpResult>() {
@@ -403,7 +432,7 @@ public class RetrofitUtils4test {
      * @param listener
      */
     public void getBankOCRResultmain(byte[] data,final ResponseListener listener){
-        RetrofitUtils4test.getInstance(mContext).getBankOCRResult(data)
+        RetrofitUtils4test.getInstance().getBankOCRResult(data)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<BankCardResult>() {
@@ -438,14 +467,50 @@ public class RetrofitUtils4test {
 
 
     /**
-     * 魔蝎sdk 请求24接口轮询任务状态
-     * @param type
-     * @param taskId
-     * @param mode
+     * biztoken
+     */
+    public void getBizTokenmain(String name,String number,final ResponseListener listener){
+        RetrofitUtils4test.getInstance().getBizToken(name,number)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<BizTokenResult>() {
+
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(BizTokenResult bizTokenResult) {
+                        if (bizTokenResult.getResult().getStatus()!= STATUS_SUCCESS) {
+                            handleResult(bizTokenResult.getResult(),listener);
+                        }
+                        else{
+                            listener.onResponse(bizTokenResult);
+                        }
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError: "+e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+    /**
+     *
+     * @param name
+     * @param number
      * @param listener
      */
-    public void fetchTypeStatemain(final String type, String taskId, String mode,final ResponseListener listener){
-        RetrofitUtils4test.getInstance(mContext).fetchTypeState(type,taskId,mode)
+    public void LivenessVerifymain(String token, byte[] data,final ResponseListener listener){
+        RetrofitUtils4test.getInstance().LivenessVerify(token,data)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<HttpResult>() {
@@ -465,6 +530,50 @@ public class RetrofitUtils4test {
                             listener.onResponse(httpResult);
                         }
                     }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "onError: "+e.toString());
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
+
+    /**
+     * 魔蝎sdk 请求24接口轮询任务状态
+     * @param type
+     * @param taskId
+     * @param mode
+     * @param listener
+     */
+    public void fetchTypeStatemain(final String type, String taskId, String mode,final ResponseListener listener){
+        RetrofitUtils4test.getInstance().fetchTypeState(type,taskId,mode)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<TypeStateResult>() {
+
+
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(TypeStateResult typeStateResult) {
+                        if (typeStateResult.getResult().getStatus()!= STATUS_SUCCESS) {
+                            handleResult(typeStateResult.getResult(),listener);
+                        }
+                        else{
+                            listener.onResponse(typeStateResult);
+                        }
+                    }
+
+
 
                     @Override
                     public void onError(Throwable e) {
@@ -486,10 +595,10 @@ public class RetrofitUtils4test {
      * @param listener
      */
     public void uploadUserInfomain(final JSONObject account, String taskId,final ResponseListener listener){
-        RetrofitUtils4test.getInstance(mContext).uploadUserInfo(account,taskId)
+        RetrofitUtils4test.getInstance().uploadUserInfo(account,taskId)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<HttpResult>() {
+                .subscribe(new Observer<UserInfoResult>() {
 
 
                     @Override
@@ -498,14 +607,16 @@ public class RetrofitUtils4test {
                     }
 
                     @Override
-                    public void onNext(HttpResult httpResult) {
-                        if (httpResult.getStatus()!= STATUS_SUCCESS) {
-                            handleResult(httpResult,listener);
+                    public void onNext(UserInfoResult userInfoResult) {
+                        if (userInfoResult.getResult().getStatus()!= STATUS_SUCCESS) {
+                            handleResult(userInfoResult.getResult(),listener);
                         }
                         else{
-                            listener.onResponse(httpResult);
+                            listener.onResponse(userInfoResult);
                         }
                     }
+
+
 
                     @Override
                     public void onError(Throwable e) {
@@ -519,50 +630,6 @@ public class RetrofitUtils4test {
                 });
     }
 
-    /**
-     * 请求获取激活时用户类型的方法
-     */
-    public void getUserType_main(final ResponseListener listener) {
-        final SharedPreferences mSp = mContext.getSharedPreferences(
-                Constants.SharedPreferencesKey.DEVICE_USER_TYPE,
-                Context.MODE_PRIVATE);
-        if (mSp.contains(Constants.SharedPreferencesKey.DEVICE_GLOBAL_NEW_USER) && mSp.contains(Constants.SharedPreferencesKey.DEVICE_PRODUCT_NEW_USER)) {
-            return;
-        }
-        RetrofitUtils4test.getInstance(mContext).getUserType()
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<UserType>() {
-                    @Override
-                    public void onSubscribe(Disposable d) {
-                    }
-
-                    @Override
-                    public void onNext(UserType userType) {
-                        if (userType.getResult().getStatus()!= STATUS_SUCCESS) {
-                            handleResult(userType.getResult(),listener);
-                        }
-
-                        Boolean device_global_new_user = userType.isDevice_global_new_user();
-                        Boolean device_product_new_user = userType.isDevice_product_new_user();
-
-                        mSp.edit()
-                                .putBoolean(Constants.SharedPreferencesKey.DEVICE_GLOBAL_NEW_USER, device_global_new_user)
-                                .putBoolean(Constants.SharedPreferencesKey.DEVICE_PRODUCT_NEW_USER, device_product_new_user)
-                                .apply();
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.i(TAG, "onError: "+e.toString());
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-    }
 
 
     public interface ResponseListener<T> {

@@ -11,8 +11,12 @@ import android.widget.Button;
 
 import com.loanhome.lib.LoanHomeLib;
 import com.loanhome.lib.activity.IDCardDetectActivity;
+import com.loanhome.lib.bean.TaskInfo;
+import com.loanhome.lib.listener.MoxieResultCallback;
 import com.loanhome.lib.listener.VerifyResultCallback;
 import com.loanhome.lib.util.IDCarcdDetectUtil;
+import com.loanhome.lib.util.LivenessUtil;
+import com.loanhome.lib.util.MoXieUtil;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -120,8 +124,62 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setLiveNess(){
 
+        LivenessUtil livenessUtil =new LivenessUtil();
+        livenessUtil.getBizToken(this, new VerifyResultCallback() {
+            @Override
+            public void onVerifySuccess(String result) {
+                Log.i(TAG, "onVerifySuccess: "+result);
+            }
+
+            @Override
+            public void onVerifyWaitConfirm() {
+
+            }
+
+            @Override
+            public void onVerifyFail(String type) {
+                Log.i(TAG, "onVerifyFail: ");
+            }
+
+            @Override
+            public void onVerifyCancel() {
+                Log.i(TAG, "onVerifyCancel: ");
+            }
+
+            @Override
+            public void onVerifyStart() {
+                Log.i(TAG, "onVerifyStart: ");
+            }
+        });
     }
     private void setMoxie(){
 
+        MoXieUtil moXieUtil =new MoXieUtil();
+        String task = "bank"; //声明类型
+
+        TaskInfo taskInfo =new TaskInfo();
+        taskInfo.setLoginCode("CMB");
+        taskInfo.setLoginTarget("CREDITCARD");
+        taskInfo.setLoginType("IDCARD");
+        taskInfo.setAccount("362324199111124228");
+        taskInfo.setPassword("PBqEBh9Zd/AB0rIfeUptxg==\n");
+
+        moXieUtil.gotoMoXie(this, task, taskInfo, new MoxieResultCallback() {
+
+            @Override
+            public void onSuccess(String action) {
+                Log.i(TAG, "onSuccess: "+action);
+            }
+
+            @Override
+            public void onFailed() {
+                Log.i(TAG, "onFailed: ");
+            }
+
+            @Override
+            public void onProgress() {
+                Log.i(TAG, "onProgress: ");
+            }
+        });
     }
 }

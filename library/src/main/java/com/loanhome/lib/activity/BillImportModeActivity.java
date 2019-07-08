@@ -1,13 +1,17 @@
 package com.loanhome.lib.activity;
 
+import android.app.ActivityManager;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.View;
 import android.widget.RelativeLayout;
 import android.widget.Toast;
@@ -17,6 +21,7 @@ import com.loanhome.lib.R;
 import com.loanhome.lib.bean.ImportStateInfo;
 import com.loanhome.lib.bean.TaskInfo;
 import com.loanhome.lib.http.StatisticsController;
+import com.loanhome.lib.listener.MoxieResultCallback;
 import com.loanhome.lib.model.BillImportViewModel;
 import com.loanhome.lib.statistics.IStatisticsConsts;
 import com.loanhome.lib.util.AesUtil;
@@ -34,6 +39,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class BillImportModeActivity extends AppCompatActivity {
@@ -59,6 +65,8 @@ public class BillImportModeActivity extends AppCompatActivity {
     private boolean canCallBack;
     private boolean hasGoneOnce;
     private Handler handler;
+    private MoxieCallBackData moxieCallBackData;
+    private static MoxieResultCallback mMoxieResultCallback;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         handler = new Handler();
@@ -97,6 +105,9 @@ public class BillImportModeActivity extends AppCompatActivity {
 
                 } else if (integer != null && integer == BillImportViewModel.FETCH_PROGRESS) {
                     if (handler != null){
+//                        EventBus.getDefault()
+//                                .post(new ImportEvent(ImportEvent.PROGRESS));
+                        mMoxieResultCallback.onProgress();
                         handler.postDelayed(new Runnable() {
                             @Override
                             public void run() {
@@ -127,7 +138,7 @@ public class BillImportModeActivity extends AppCompatActivity {
 //            function = AccountContoller.getInstance()
 //                    .getUserInfo().isHasCard(this) ? "1" : "0";
 //        }
-        StatisticsController.getInstance().newRequestStatics(BillImportModeActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_ADD_CARD_PAGE
+        StatisticsController.getInstance().newRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_ADD_CARD_PAGE
                 , IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW
                 , IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_VIEW_ADD_CARD_PAGE, 0, function, null);
 
@@ -169,7 +180,8 @@ public class BillImportModeActivity extends AppCompatActivity {
 //            AccountContoller.getInstance().gotoLogin();
 //        }
 //        param.setUserId(AccountContoller.getInstance().getAccessToken());
-//        param.setUserId(Global.getAccess_token());
+        // TODO: 2019/7/2
+        param.setUserId(Global.mInfo.getAccess_token());
         param.setTaskType(task);
         param.setCallbackTaskInfo(true);
         param.setQuitDisable(true);
@@ -199,8 +211,28 @@ public class BillImportModeActivity extends AppCompatActivity {
         MoxieSDK.getInstance().startInMode(this,
                 MoxieSDKRunMode.MoxieSDKRunModeBackground, param, new MoxieCallBack() {
                     @Override
+                    public void onStatusChange(MoxieContext moxieContext, MoxieCallBackData moxieCallBackData) {
+                        super.onStatusChange(moxieContext, moxieCallBackData);
+                        BillImportModeActivity.this.moxieCallBackData = moxieCallBackData;
+                        Log.d("onStatusChange", moxieCallBackData.toString());
+                        if (MoxieSDK.getInstance().getRunMode() == MoxieSDKRunMode.MoxieSDKRunModeBackground
+                                && !MoxieSDK.getInstance().isForeground()
+                                && moxieCallBackData.getWaitCode() != null) {
+//                            Toast.makeText(BillImportModeActivity.this, "需要显示SDK", Toast.LENGTH_SHORT).show();
+                            MoxieSDK.getInstance().show();
+                        } else if (MoxieSDK.getInstance().getRunMode() == MoxieSDKRunMode.MoxieSDKRunModeBackground
+                                && moxieCallBackData.getWaitCode() == null) {
+                            showActivity();
+                        }
+                    }
+
+                    @Override
                     public boolean callback(MoxieContext moxieContext, MoxieCallBackData
                             moxieCallBackData) {
+                        BillImportModeActivity.this.moxieCallBackData = null;
+                        if (MoxieSDK.getInstance().getRunMode() == MoxieSDKRunMode.MoxieSDKRunModeBackground) {
+                            showActivity();
+                        }
                         canCallBack = true;
                         if (moxieCallBackData != null) {
                             switch (moxieCallBackData.getCode()) {
@@ -271,10 +303,32 @@ public class BillImportModeActivity extends AppCompatActivity {
 
     }
 
+    public void showActivity() {
+        if (!IsForeground(this)) {
+            ActivityManager am = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+            if (am != null) {
+                am.moveTaskToFront(getTaskId(), ActivityManager.MOVE_TASK_WITH_HOME);
+            }
+        }
+    }
+
+    private boolean IsForeground(Context context) {
+        ActivityManager am = (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
+        List<ActivityManager.RunningTaskInfo> tasks = null;
+        if (am != null) {
+            tasks = am.getRunningTasks(1);
+        }
+        if (tasks != null && !tasks.isEmpty()) {
+            ComponentName topActivity = tasks.get(0).topActivity;
+            return topActivity.getClassName().equals(BillImportModeActivity.class.getName());
+        }
+        return false;
+    }
 
     public void importFailed(){
 //        EventBus.getDefault()
 //                .post(new ImportEvent(ImportEvent.FAIL));
+        mMoxieResultCallback.onFailed();
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
@@ -288,7 +342,7 @@ public class BillImportModeActivity extends AppCompatActivity {
 
     }
     public void importSuccess(){
-
+        mMoxieResultCallback.onSuccess("");
 //        EventBus.getDefault()
 //                .post(new ImportEvent(ImportEvent.SUCCESS));
         runOnUiThread(new Runnable() {
@@ -300,11 +354,7 @@ public class BillImportModeActivity extends AppCompatActivity {
                 }
             }
         });
-
-
     }
-
-
 
 
     public void uploadingAccountInfo(String s, String taskId, String taskType) {
@@ -361,7 +411,12 @@ public class BillImportModeActivity extends AppCompatActivity {
 //        if (!canCallBack && hasGoneOnce){
 //            finish();
 //        }
-
+        if (MoxieSDK.getInstance().isDoing()
+                && MoxieSDK.getInstance().getRunMode() == MoxieSDKRunMode.MoxieSDKRunModeBackground
+                && moxieCallBackData != null
+                && moxieCallBackData.getWaitCode() != null) {
+            MoxieSDK.getInstance().show();
+        }
     }
 
     @Override
@@ -386,6 +441,10 @@ public class BillImportModeActivity extends AppCompatActivity {
                 .finish();
         super.finish();
         overridePendingTransition(0,0);
+    }
+
+    public static void setMoxieResultCallback(MoxieResultCallback moxieResultCallback) {
+        mMoxieResultCallback = moxieResultCallback;
     }
 
 }

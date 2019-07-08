@@ -1,7 +1,5 @@
 package com.loanhome.lib.util;
 
-import com.loanhome.lib.http.HttpGlobal;
-
 public class TestUtil {
 
 	private final static boolean DEBUG = true;

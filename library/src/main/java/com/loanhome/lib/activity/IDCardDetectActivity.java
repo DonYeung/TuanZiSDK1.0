@@ -4,7 +4,6 @@ import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -13,15 +12,18 @@ import android.graphics.Rect;
 import android.graphics.RectF;
 import android.graphics.SurfaceTexture;
 import android.hardware.Camera;
+import android.hardware.camera2.CameraAccessException;
+import android.hardware.camera2.CameraCharacteristics;
+import android.hardware.camera2.CameraManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Message;
 import android.os.Vibrator;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.TextureView;
 import android.view.View;
 import android.view.animation.LinearInterpolator;
@@ -42,11 +44,13 @@ import com.loanhome.lib.listener.IDCardVerifyFailDialogDismissListener;
 import com.loanhome.lib.listener.LivenessDialogDismissListener;
 import com.loanhome.lib.listener.VerifyResultCallback;
 import com.loanhome.lib.statistics.IStatisticsConsts;
+import com.loanhome.lib.util.CameraHandlerThread;
 import com.loanhome.lib.util.ICamera;
 import com.loanhome.lib.util.Machine;
 import com.loanhome.lib.util.RotaterUtil;
 import com.loanhome.lib.util.Util;
 import com.loanhome.lib.view.ConfirmDialog;
+import com.loanhome.lib.view.Dialog_FilpTip;
 import com.loanhome.lib.view.ExitConfirmDialog;
 import com.loanhome.lib.view.IDCardGuideH;
 import com.loanhome.lib.view.IDCardVerifyFailDialog;
@@ -54,9 +58,6 @@ import com.loanhome.lib.view.LivenessResultDialog;
 import com.megvii.idcardquality.IDCardQualityAssessment;
 import com.megvii.idcardquality.IDCardQualityResult;
 import com.megvii.idcardquality.bean.IDCardAttr;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -65,6 +66,9 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import static android.os.Build.VERSION_CODES.M;
 
@@ -151,11 +155,28 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
     private IDCardInfo idCardInfo = new IDCardInfo();
     private static VerifyResultCallback mVerifyResultCallback;
+
+    private ThreadPoolExecutor mThreadPool;
+    private static final int KEEP_ALIVE_TIME = 10;
+    private static final TimeUnit TIME_UNIT = TimeUnit.SECONDS;
+    private BlockingQueue<Runnable> workQueue;
+
+    //HandlerThread
+    private CameraHandlerThread cameraHandlerThread;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detect);
         initView();
+
+        int corePoolSize = Runtime.getRuntime().availableProcessors();
+        int maximumPoolSize = corePoolSize * 2;
+        workQueue = new LinkedBlockingQueue<>();
+        mThreadPool = new ThreadPoolExecutor(corePoolSize, maximumPoolSize, KEEP_ALIVE_TIME, TIME_UNIT, workQueue);
+
+
+
     }
 
     private void initView() {
@@ -253,12 +274,51 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
         mFrameDataQueue = new LinkedBlockingDeque<byte[]>(1);
 
-        //初始化
-        mIdCardQualityAssessment = new IDCardQualityAssessment.Builder()
-                .setClear((float)0.4)
-                .setIsIgnoreShadow(false)// 不忽略阴影
-                .setIsIgnoreHighlight(false)//不忽略光斑
-                .build();
+        //首先判断SDK版本是否大于等于5.0,实际部分厂商实现了Camera2.0的不同程度，
+        // 其支持程度为FULL （1）> LIMITED（0） > LEGACY（2）
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            CameraManager manager = (CameraManager) getSystemService(Context.CAMERA_SERVICE);
+            try {
+                String[] cameraIds = manager.getCameraIdList();
+                if (cameraIds != null && cameraIds.length > 0) {
+                    //后置摄像头存在
+                    if (cameraIds[0] != null) {
+                        CameraCharacteristics characteristics
+                                = manager.getCameraCharacteristics(cameraIds[0]);
+                        int level = characteristics.get(CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL);
+                        Log.i(TAG, "initSdk: Camera2.0 api支持程度为"+ level);
+                        if (level != CameraCharacteristics.INFO_SUPPORTED_HARDWARE_LEVEL_FULL){
+                            //Camera2.0 支持程度在 LEGACY / LIMITED 设置初始化clear值为0.4
+                            //初始化
+                            mIdCardQualityAssessment = new IDCardQualityAssessment.Builder()
+                                    .setClear((float)0.4)
+                                    .setIsIgnoreShadow(false)// 不忽略阴影
+                                    .setIsIgnoreHighlight(false)//不忽略光斑
+                                    .build();
+                        }else{
+                            //Camera2.0 支持程度在 FULL 设置初始化clear值为0.5
+                            //初始化
+                            mIdCardQualityAssessment = new IDCardQualityAssessment.Builder()
+                                    .setClear((float)0.5)
+                                    .setIsIgnoreShadow(false)// 不忽略阴影
+                                    .setIsIgnoreHighlight(false)//不忽略光斑
+                                    .build();
+                        }
+                    }
+                }
+            } catch (CameraAccessException e) {
+                e.printStackTrace();
+            }
+
+        }else {
+            //SDK版本小于5.0，不支持Camera2.0 直接设置初始化clear值为0.4
+            //初始化
+            mIdCardQualityAssessment = new IDCardQualityAssessment.Builder()
+                    .setClear((float) 0.4)
+                    .setIsIgnoreShadow(false)// 不忽略阴影
+                    .setIsIgnoreHighlight(false)//不忽略光斑
+                    .build();
+        }
 
 
         //必须先做授权判断
@@ -272,12 +332,6 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
     }
 
-    @Override
-    public void onPreviewFrame(byte[] data, Camera camera) {
-        if (isCanDetected) {
-            mFrameDataQueue.offer(data);
-        }
-    }
 
     private void doPreview() {
         if (!mHasSurface) {
@@ -391,10 +445,39 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
     }
 
+    public synchronized void ThreadPoolPost(final byte[] frameData) {
+        mThreadPool.execute(new Runnable() {
+            @Override
+            public void run() {
+                // 编码
+                Log.i(TAG, Thread.currentThread().getName()+ "_onPreviewFrame");
+                mFrameDataQueue.offer(frameData);
+            }
+        });
+    }
+
+    @Override
+    public void onPreviewFrame(final byte[] data, Camera camera) {
+        if (isCanDetected) {
+            ThreadPoolPost(data);
+//            mFrameDataQueue.offer(data);
+//            Log.i(TAG, Thread.currentThread().getName()+ "_onPreviewFrame");
+            Log.i(TAG,"after setting, previewformate is " + camera.getParameters().getPreviewFormat());
+            Log.i(TAG,"initCamera  after setting, previewframetate is " + camera.getParameters().getPreviewFrameRate());
+        }
+    }
+
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int i, int i1) {
-        Camera camera = mICamera.openCamera(this);
-        if (camera != null) {
+//        Camera camera =mICamera.openCamera(this);
+
+        cameraHandlerThread = new CameraHandlerThread("CameraMythread",this);
+        synchronized (cameraHandlerThread) {
+            mICamera = cameraHandlerThread.openCamera();
+        }
+
+
+        if (mICamera != null) {
             initIdcardGuide();
 
             mHasSurface = true;
@@ -428,12 +511,12 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
             //新OCR统计-调用相机
             if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
-                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
                         IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
                         IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_ASKCAMERA,index
                         , functionId, contentId,api_id, pPosition, "0", param2);
             } else {
-                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
                         IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
                         IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_ASKCAMERA,
                         index, functionId, contentId,api_id, pPosition, "1", param2);
@@ -475,6 +558,9 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
     public boolean onSurfaceTextureDestroyed(SurfaceTexture surfaceTexture) {
         mICamera.closeCamera();
         mHasSurface = false;
+        if (cameraHandlerThread!=null){
+            cameraHandlerThread.quit();
+        }
         return false;
     }
 
@@ -496,7 +582,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
             //开始预处理埋点
             if (!mIsFrontPre && mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT){
                 //新OCR统计-开始抓拍/正面
-                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
                         IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
                         IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_SHOT,index
                         , functionId, contentId,api_id, pPosition, "0", param2);
@@ -506,7 +592,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
             } else if (!mIsBackPre && mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_BACK){
 
                 //新OCR统计-开始抓拍/反面
-                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
                         IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
                         IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_SHOT,
                         index, functionId, contentId,api_id, pPosition, "1", param2);
@@ -590,6 +676,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
     }
 
     private Bitmap iDCardImg = null;
+    private Bitmap portraitImg = null;
     private void handleSuccessResult() {
         cancelMyToast();
         setBlueLine();
@@ -599,8 +686,87 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
         long endtime =System.currentTimeMillis();
         Log.i(TAG, "handleSuccessResult: 成功裁剪出图片："+endtime);
+        if (mQualityResult.attr.side == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
+            portraitImg = mQualityResult.croppedImageOfPortrait();
+        }
+
         gotoVerify(mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT ? 0 : 1,
-                Util.bmp2byteArr(iDCardImg));
+                Util.bmp2byteArr(iDCardImg),Util.bmp2byteArr(portraitImg));
+        if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
+            isFrontComplete = true;
+            //假如反面已经完成，则回调信息给页端
+            if (isBackComplete){
+                // 下一模块
+                callBackData();
+            } else {
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                         //新OCR统计- 翻转提示弹窗- 正面
+                        StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_FILP,
+                                IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                                IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_FILP,index
+                                , functionId, contentId,api_id, pPosition, "0", param2);
+
+                        Dialog_FilpTip dialogFilpTip = new Dialog_FilpTip();
+                        dialogFilpTip.show(getFragmentManager(), "");
+                        dialogFilpTip.setSide("0");
+                        dialogFilpTip.setDialogDismissListener(new Dialog_FilpTip.DialogDismissListener() {
+                            @Override
+                            public void onDismiss(boolean isTryAgain) {
+                                switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+
+                                //新OCR统计- 点击翻转提示弹窗- 正面
+                                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_FILP,
+                                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_FILP_OK,index
+                                        , functionId, contentId,api_id, pPosition, "0", param2);
+                            }
+                        });
+                    }
+                });
+
+                //假如反面没有完成，则开始反面ocr
+                switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+
+            }
+        }else{
+            isBackComplete = true;
+            //假如正面已完成，则回调信息给页端
+            if (isFrontComplete){
+                //下一模块
+                callBackData();
+            } else {
+                //假如正面没有完成，则开始正面的ocr
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        //新OCR统计- 翻转提示弹窗- 反面
+                        StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_FILP,
+                                IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                                IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_FILP,index
+                                , functionId, contentId,api_id, pPosition, "1", param2);
+
+                        Dialog_FilpTip dialogFilpTip = new Dialog_FilpTip();
+                        dialogFilpTip.show(getFragmentManager(), "");
+                        dialogFilpTip.setSide("1");
+                        dialogFilpTip.setDialogDismissListener(new Dialog_FilpTip.DialogDismissListener() {
+                            @Override
+                            public void onDismiss(boolean isTryAgain) {
+                                switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
+
+                                //新OCR统计- 点击翻转提示弹窗 - 反面
+                                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_FILP,
+                                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+                                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_FILP_OK,index
+                                        , functionId, contentId,api_id, pPosition, "1", param2);
+                            }
+                        });
+                    }
+                });
+
+            }
+        }
 
     }
 
@@ -670,24 +836,39 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
             lastFaileType = faileType;
             String toastStr = "";
-            if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NOTIDCARD) {//没有检测到身份证
-                toastStr = "没有检测到身份证";
-            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NOTINBOUND) {//身份证不在引导框内
-                toastStr = "身份证不在引导框内";
-            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NOTCLEAR) {//身份证清晰度太低
-                toastStr = "身份证清晰度太低";
-            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_HAVEHIGHLIGHT) {//存在光斑
-                toastStr = "存在光斑";
-            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_HAVESHADOW) {//存在阴影
-                toastStr = "存在阴影";
-            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NEEDFRONT) {//需要检测身份人像面
-                toastStr = "需要检测身份人像面";
-            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NEEDBACK) {//需要检测身份证国徽面
-                toastStr = "需要检测身份证国徽面";
-            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NEEDBACK) {//需要检测身份证国徽面
-                toastStr = "需要检测身份证国徽面";
+            if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NOTIDCARD) {
+                //没有检测到身份证
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_1);
+            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NOTINBOUND) {
+                //身份证不在引导框内
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_2);
+            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NOTCLEAR) {
+                //身份证清晰度太低
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_3);
+            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_HAVEHIGHLIGHT) {
+                //存在光斑
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_4);
+            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_HAVESHADOW) {
+                //存在阴影
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_5);
+            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NEEDFRONT) {
+                //请翻到人像面进行识别
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_6);
+            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NEEDBACK) {
+                //请翻到国徽面进行识别
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_7);
+            } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_NEEDBACK) {
+                //需要检测身份证国徽面
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_7);
             } else if (faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_CONVERT) {
-                toastStr = "身份证倒置,请放正";
+                //请摆正身份证进行识别
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_8);
+            }else if(faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_ERRORARGUMENT){
+                //识别出了些小问题
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_9);
+            }else if(faileType == IDCardQualityResult.IDCardResultType.IDCARD_QUALITY_FAILED_UNKNOWN){
+                //识别出了些小问题
+                toastStr = getResources().getString(R.string.remind_idcard_quality_failed_9);
             }
 
             if (!"".equals(toastStr)) {
@@ -934,7 +1115,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
     @Override
     public void onBackPressed() {
-        if (isIdentifying){
+//        if (isIdentifying){
             Log.i(TAG, "onBackPressed: "+isIdentifying);
             //确认是否离开
             ExitConfirmDialog exitDialog = new ExitConfirmDialog();
@@ -946,12 +1127,12 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
                         //新OCR统计-点击关闭按钮
                         if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
-                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
                                     IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
                                     IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,index
                                     , functionId, contentId,api_id, pPosition, "0", param2);
                         } else {
-                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+                            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
                                     IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
                                     IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,
                                     index, functionId, contentId,api_id, pPosition, "1", param2);
@@ -964,30 +1145,32 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                     }
                 }
             });
-        } else {
-            Log.i(TAG, "onBackPressed2: "+isIdentifying);
-
-            //新OCR统计-点击关闭按钮
-            if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
-                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
-                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,index
-                        , functionId, contentId,api_id, pPosition, "0", param2);
-            } else {
-                StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
-                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
-                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,
-                        index, functionId, contentId,api_id, pPosition, "1", param2);
-            }
-
-            callBackData();
-            mVerifyResultCallback.onVerifyCancel();
-            doFinish();
-
-        }
+//        } else {
+//            Log.i(TAG, "onBackPressed2: "+isIdentifying);
+//
+//            //新OCR统计-点击关闭按钮
+//            if (mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
+//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,index
+//                        , functionId, contentId,api_id, pPosition, "0", param2);
+//            } else {
+//                StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_SHOT,
+//                        IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
+//                        IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CLOSE,
+//                        index, functionId, contentId,api_id, pPosition, "1", param2);
+//            }
+//
+//            callBackData();
+//            doFinish();
+//
+//        }
     }
 
     private void doFinish() {
+        if (cameraHandlerThread!=null){
+            cameraHandlerThread.quit();
+        }
         try {
             if (mDecoder != null) {
                 mDecoder.setmHasSuccess(true);
@@ -1002,7 +1185,9 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         if (mFrameDataQueue != null) {
             mFrameDataQueue.clear();
         }
-        mIdCardQualityAssessment.release();
+        if (mIdCardQualityAssessment!=null) {
+            mIdCardQualityAssessment.release();
+        }
         removeAllAnimation();
 
         finish();
@@ -1013,7 +1198,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         super.onDestroy();
     }
 
-    private void gotoVerify(final int mIdSide, final byte[] bytes) {
+    private void gotoVerify(final int mIdSide, final byte[] bytes,final byte[] bytes_ref) {
         Log.i(TAG, "gotoVerify: 识别");
 
 
@@ -1027,7 +1212,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         if (mIdSide == 0) {
             Log.i(TAG, "gotoVerify: 正面请求认证");
 
-            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
+            RetrofitUtils4test.getInstance().getOCRResultmain(bytes, bytes_ref,mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
 
                 @Override
                 public void onResponse(IDCardResult idCardResult) {
@@ -1125,7 +1310,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                 dialog.show(getFragmentManager(), ConfirmDialog.FRONT_CONFIRM);
                             }
                             //新OCR统计-打开弹窗/正面
-                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_POPUP,
+                            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_POPUP,
                                     IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
                                     IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_POPUP,index
                                     , functionId, contentId,api_id, pPosition, "0", param2);
@@ -1140,7 +1325,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
 
                                         //新OCR统计-确认无误按钮/正面
-                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_CONFIRM,
+                                        StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_CONFIRM,
                                                 IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
                                                 IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CONFIRM,index
                                                 , functionId, contentId,api_id, pPosition, "0", param2);
@@ -1159,7 +1344,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                     } else {
 
                                         //新OCR统计-重试按钮/正面
-                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_RETRY,
+                                        StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_RETRY,
                                                 IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
                                                 IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_RETRY,index
                                                 , functionId, contentId,api_id, pPosition, "0", param2);
@@ -1191,7 +1376,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         } else {//背面认证
             Log.i(TAG, "gotoVerify: 背面请求认证");
 
-            RetrofitUtils4test.getInstance(this).getOCRResultmain(bytes, mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
+            RetrofitUtils4test.getInstance().getOCRResultmain(bytes,bytes_ref, mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
 
                 @Override
                 public void onResponse(IDCardResult idCardResult) {
@@ -1282,7 +1467,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                             }
 
                             //新OCR统计-打开弹窗/反面
-                            StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_POPUP,
+                            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_POPUP,
                                     IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
                                     IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_POPUP,index
                                     , functionId, contentId, api_id,pPosition, "1", param2);
@@ -1295,7 +1480,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                     if (isconfirm){
 
                                         //新OCR统计-确认无误按钮/反面
-                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_CONFIRM,
+                                        StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_CONFIRM,
                                                 IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
                                                 IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_CONFIRM,index
                                                 , functionId, contentId, api_id,pPosition, "1", param2);
@@ -1314,7 +1499,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 
 
                                         //新OCR统计-重试按钮/反面
-                                        StatisticsController.getInstance().newOCRRequestStatics(IDCardDetectActivity.this,IStatisticsConsts.UmengEventId.Page.PAGE_OCR_RETRY,
+                                        StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_RETRY,
                                                 IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
                                                 IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_OCR_RETRY,index
                                                 , functionId, contentId, api_id,pPosition, "1", param2);
