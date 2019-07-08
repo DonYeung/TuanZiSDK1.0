@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
             @Override
             public void onVerifyFail(String type) {
-                Log.i(TAG, "onVerifyFail: ");
+                Log.i(TAG, "onVerifyFail: "+type);
             }
 
             @Override

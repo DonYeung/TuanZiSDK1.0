@@ -23,7 +23,9 @@ public class LivenessUtil {
         String idNumber="440509199411291218";
 
         LivenessBiz livenessBiz = new LivenessBiz(activity);
+        livenessBiz.setVerifyResultCallback(callback);
         livenessBiz.getBizToken(idName, idNumber);
+
     }
 
 }

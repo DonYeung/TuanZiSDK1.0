@@ -11,6 +11,7 @@ import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.LivenessVerifyResult;
 import com.loanhome.lib.http.RetrofitUtils4test;
 import com.loanhome.lib.listener.LivenessDialogDismissListener;
+import com.loanhome.lib.listener.VerifyResultCallback;
 import com.loanhome.lib.view.LivenessResultDialog;
 import com.megvii.meglive_sdk.listener.DetectCallback;
 import com.megvii.meglive_sdk.listener.PreCallback;
@@ -25,6 +26,7 @@ public class LivenessBiz implements DetectCallback, PreCallback {
     private String bizToken;
     private String idCardName;
     private String idCardNumber;
+    private VerifyResultCallback callback;
 
 
     public LivenessBiz(Activity activity){
@@ -52,7 +54,8 @@ public class LivenessBiz implements DetectCallback, PreCallback {
 
                     @Override
                     public void onErrorResponse(int errorcode, String msg) {
-                        Toast.makeText(mActivity, "认证出了点小问题，请稍后再试", Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(mActivity, "认证出了点小问题，请稍后再试", Toast.LENGTH_SHORT).show();
+                        callback.onVerifyFail("认证出了点小问题，请稍后再试");
                     }
                 });
 
@@ -86,8 +89,8 @@ public class LivenessBiz implements DetectCallback, PreCallback {
                 @Override
                 public void onResponse(LivenessVerifyResult response) {
                     Boolean flag = response.getFlag();
-                    if (!flag){
-
+                    if (flag){
+                        callback.onVerifySuccess("刷脸验证成功");
                     } else{
 
                         int errorcode = response.getResult().getErrorcode();
@@ -101,12 +104,14 @@ public class LivenessBiz implements DetectCallback, PreCallback {
 
                 @Override
                 public void onErrorResponse(int errorcode, String msg) {
-                    Toast.makeText(mActivity, "认证出了点小问题，请稍后再试", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(mActivity, "认证出了点小问题，请稍后再试", Toast.LENGTH_SHORT).show();
+                    callback.onVerifyFail("认证出了点小问题，请稍后再试");
+
 
                 }
             });
         }else{
-            showFailDialog(errorCode,errorMessage);
+            showFaileToast(errorCode,errorMessage);
         }
     }
 
@@ -141,60 +146,66 @@ public class LivenessBiz implements DetectCallback, PreCallback {
         }
 
         if (!TextUtils.isEmpty(toastStr)) {
-
+//            Toast.makeText(mActivity, toastStr, Toast.LENGTH_SHORT).show();
+            callback.onVerifyFail(toastStr);
         }
     }
 
     private void showFailDialog(final int errorCode, final String Msg){
-        mActivity.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-//                LivenessResultDialog dialog = new LivenessResultDialog();
-//
-//                if (!mActivity.isDestroyed()){
-//                    dialog.show(mActivity.getFragmentManager(), "");
-//                    if (Msg.equals("NO_ID_CARD_NUMBER")||Msg.equals("NO_FACE_FOUND")||Msg.equals("NO_ID_PHOTO")||
-//                            Msg.equals("PHOTO_FORMAT_ERROR")||Msg.equals("DATA_SOURCE_ERROR")){
-//                        dialog.setDismissButton(true);
-//                    }else{
-//                        dialog.setDismissButton(false);
-//                    }
-//
-//                    dialog.setReson(Msg);
-//                    dialog.setTitle("刷脸认证失败");
-//                    dialog.setLivenessDialogDismissListener(new LivenessDialogDismissListener() {
-//                        @Override
-//                        public void onDismiss(boolean isTryAgain) {
-//                            if(isTryAgain) {
-//                                getBizToken(idCardName,idCardNumber);
-//                            } else {
+//        mActivity.runOnUiThread(new Runnable() {
+//            @Override
+//            public void run() {
+                LivenessResultDialog dialog = new LivenessResultDialog();
+
+                if (!mActivity.isDestroyed()){
+                    dialog.show(mActivity.getFragmentManager(), "");
+                    if (Msg.equals("NO_ID_CARD_NUMBER")||Msg.equals("NO_FACE_FOUND")||Msg.equals("NO_ID_PHOTO")||
+                            Msg.equals("PHOTO_FORMAT_ERROR")||Msg.equals("DATA_SOURCE_ERROR")){
+                        dialog.setDismissButton(true);
+                    }else{
+                        dialog.setDismissButton(false);
+                    }
+
+                    dialog.setReson(Msg);
+                    dialog.setTitle("刷脸认证失败");
+                    dialog.setLivenessDialogDismissListener(new LivenessDialogDismissListener() {
+                        @Override
+                        public void onDismiss(boolean isTryAgain) {
+                            if(isTryAgain) {
+                                getBizToken(idCardName,idCardNumber);
+                            } else {
 //                                event.setResultCode(LivenessEvent.LIVENESS_FAIL);
 //                                event.setErrCode(errorCode);
 //                                event.setMsg(Msg);
 //                                EventBus.getDefault().post(event);
-//                            }
-//                        }
-//                    });
-//
-//                }
-
-                LivenessResultDialog dialog = new LivenessResultDialog();
-                dialog.show(mActivity.getFragmentManager(), "");
-                dialog.setReson(Msg);
-                dialog.setTitle("刷脸认证失败");
-                dialog.setLivenessDialogDismissListener(new LivenessDialogDismissListener() {
-                    @Override
-                    public void onDismiss(boolean isTryAgain) {
-                        if(isTryAgain) {
-                            getBizToken(idCardName,idCardNumber);
-                        } else {
-
+                                callback.onVerifyFail(Msg);
+                            }
                         }
-                    }
-                });
+                    });
 
-            }
-        });
+                }
 
+//                LivenessResultDialog dialog = new LivenessResultDialog();
+//                dialog.show(mActivity.getFragmentManager(), "");
+//                dialog.setReson(Msg);
+//                dialog.setTitle("刷脸认证失败");
+//                dialog.setLivenessDialogDismissListener(new LivenessDialogDismissListener() {
+//                    @Override
+//                    public void onDismiss(boolean isTryAgain) {
+//                        if(isTryAgain) {
+//                            getBizToken(idCardName,idCardNumber);
+//                        } else {
+//
+//                        }
+//                    }
+//                });
+
+//            }
+//        });
+
+    }
+
+    public void setVerifyResultCallback(VerifyResultCallback moxieResultCallback) {
+        callback = moxieResultCallback;
     }
 }

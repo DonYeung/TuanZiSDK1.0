@@ -2,7 +2,10 @@ package com.loanhome.lib.view;
 
 import android.app.Dialog;
 import android.app.DialogFragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -23,6 +26,8 @@ public class LivenessResultDialog extends DialogFragment {
     private String mTitle;
 
     private LivenessDialogDismissListener livenessDialogDismissListener;
+
+
 
 
     @Override
@@ -92,10 +97,30 @@ public class LivenessResultDialog extends DialogFragment {
         }
 
     }
+    public void setDismissButton(boolean isDismiss){
+        if (this.tvNextOperation != null) {
+            if (isDismiss) {
+                tvNextOperation.setVisibility(View.GONE);
+            } else {
+                tvNextOperation.setVisibility(View.VISIBLE);
+            }
+        }
+    }
 
     public void setLivenessDialogDismissListener(LivenessDialogDismissListener livenessDialogDismissListener) {
         this.livenessDialogDismissListener = livenessDialogDismissListener;
     }
 
+    @Override
+    public void show(FragmentManager manager, String tag) {
+        try {
+            FragmentTransaction ft = manager.beginTransaction();
+            ft.add(this, tag);
+            ft.commitAllowingStateLoss();
+        } catch (IllegalStateException e) {
+            Log.d("ABSDIALOGFRAG", "Exception", e);
+        }
+    }
 
+    
 }
