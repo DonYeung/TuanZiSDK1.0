@@ -7,6 +7,7 @@ import android.util.Log;
 
 import com.loanhome.lib.activity.LivenessBiz;
 import com.loanhome.lib.bean.BizTokenResult;
+import com.loanhome.lib.bean.VerifyInfo;
 import com.loanhome.lib.http.RetrofitUtils4test;
 import com.loanhome.lib.listener.VerifyResultCallback;
 
@@ -16,15 +17,23 @@ import com.loanhome.lib.listener.VerifyResultCallback;
  */
 public class LivenessUtil {
     private static final String TAG = "LivenessUtil";
+    private VerifyInfo info;
 
-    public void getBizToken(final Activity activity,final VerifyResultCallback callback){
+    public VerifyInfo getInfo() {
+        return info;
+    }
 
-        String idName ="杨振东";
-        String idNumber="440509199411291218";
+    public void setInfo(VerifyInfo info) {
+        this.info = info;
+    }
+
+    public void getBizToken(final Activity activity, final VerifyResultCallback callback){
 
         LivenessBiz livenessBiz = new LivenessBiz(activity);
         livenessBiz.setVerifyResultCallback(callback);
-        livenessBiz.getBizToken(idName, idNumber);
+        if (info!=null) {
+            livenessBiz.getBizToken(info.getIdCardName(), info.getIdCardNumber(), info);
+        }
 
     }
 

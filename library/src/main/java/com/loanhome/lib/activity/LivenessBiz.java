@@ -3,15 +3,16 @@ package com.loanhome.lib.activity;
 import android.app.Activity;
 import android.text.TextUtils;
 import android.util.Log;
-import android.widget.Toast;
 
 import com.loanhome.lib.R;
 import com.loanhome.lib.bean.BizTokenResult;
-import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.LivenessVerifyResult;
+import com.loanhome.lib.bean.VerifyInfo;
 import com.loanhome.lib.http.RetrofitUtils4test;
+import com.loanhome.lib.http.StatisticsController;
 import com.loanhome.lib.listener.LivenessDialogDismissListener;
 import com.loanhome.lib.listener.VerifyResultCallback;
+import com.loanhome.lib.statistics.IStatisticsConsts;
 import com.loanhome.lib.view.LivenessResultDialog;
 import com.megvii.meglive_sdk.listener.DetectCallback;
 import com.megvii.meglive_sdk.listener.PreCallback;
@@ -27,6 +28,8 @@ public class LivenessBiz implements DetectCallback, PreCallback {
     private String idCardName;
     private String idCardNumber;
     private VerifyResultCallback callback;
+    private VerifyInfo mInfo;
+
 
 
     public LivenessBiz(Activity activity){
@@ -36,9 +39,10 @@ public class LivenessBiz implements DetectCallback, PreCallback {
         Log.i(TAG, "LivenessBiz version: "+version);
     }
 
-    public void getBizToken(String idcardname, String idcardnumber){
+    public void getBizToken(String idcardname, String idcardnumber, VerifyInfo info){
         idCardName = idcardname;
         idCardNumber = idcardnumber;
+        mInfo = info;
         Log.i(TAG, "getBizToken: ");
         RetrofitUtils4test.getInstance().getBizTokenmain(idcardname, idcardnumber,
                 new RetrofitUtils4test.ResponseListener<BizTokenResult>() {
@@ -48,6 +52,12 @@ public class LivenessBiz implements DetectCallback, PreCallback {
                             bizToken = response.getToken();
                             if (!TextUtils.isEmpty(bizToken)){
                                 megLiveManager.preDetect(mActivity, bizToken, null, HOST, LivenessBiz.this);
+                            }else{
+//                                event.setResultCode(LivenessEvent.LIVENESS_FAIL);
+//                                event.setErrCode(1003);
+//                                event.setMsg("认证出了点小问题，请稍后再试");
+//                                EventBus.getDefault().post(event);
+                                callback.onVerifyFail("认证出了点小问题，请稍后再试");
                             }
 
                     }
@@ -74,6 +84,12 @@ public class LivenessBiz implements DetectCallback, PreCallback {
         if (errorCode == 1000) {
             megLiveManager.setVerticalDetectionType(MegLiveManager.DETECT_VERITICAL_KEEP);
             megLiveManager.startDetect(this);
+
+            //新活体埋点统计-调用相机
+            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_LIVENESS_SHOT,
+                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_LIVENESS_ASK_CAMERA,
+                    String.valueOf(-1), mInfo.getFunctionId(), mInfo.getContentId(),mInfo.getApi_id(), mInfo.getpPosition(), mInfo.getParam1(), mInfo.getParam2());
         }else{
             showFaileToast(errorCode,errorMessage);
         }
@@ -85,6 +101,13 @@ public class LivenessBiz implements DetectCallback, PreCallback {
         Log.i(TAG, "onDetectFinish errorCode: "+errorCode);
         Log.i(TAG, "onDetectFinish errorMessage: "+errorMessage);
         if (errorCode == 1000){
+            //新活体埋点统计-开始抓拍
+            StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_LIVENESS_SHOT,
+                    IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_VIEW,
+                    IStatisticsConsts.UmengEventId.CkModule.CK_MODULE_LIVENESS_SHOT,
+                    String.valueOf(-1), mInfo.getFunctionId(), mInfo.getContentId(),mInfo.getApi_id(), mInfo.getpPosition(), mInfo.getParam1(), mInfo.getParam2());
+
+
             RetrofitUtils4test.getInstance().LivenessVerifymain(token, data.getBytes(), new RetrofitUtils4test.ResponseListener<LivenessVerifyResult>() {
                 @Override
                 public void onResponse(LivenessVerifyResult response) {
@@ -95,8 +118,6 @@ public class LivenessBiz implements DetectCallback, PreCallback {
 
                         int errorcode = response.getResult().getErrorcode();
                         String errorMsg = response.getResult().getMsg();
-                        errorcode = 1002;
-                        errorMsg = "2asdsadsada";
                         showFailDialog(errorcode,errorMsg);
 
                     }
@@ -104,7 +125,11 @@ public class LivenessBiz implements DetectCallback, PreCallback {
 
                 @Override
                 public void onErrorResponse(int errorcode, String msg) {
-//                    Toast.makeText(mActivity, "认证出了点小问题，请稍后再试", Toast.LENGTH_SHORT).show();
+//                    Toast.makeText(mActivity, "认证
+//                    event.setResultCode(LivenessEvent.LIVENESS_FAIL);
+//                    event.setErrCode(1003);
+//                    event.setMsg("认证出了点小问题，请稍后再试");
+//                    EventBus.getDefault().post(event);
                     callback.onVerifyFail("认证出了点小问题，请稍后再试");
 
 
@@ -115,7 +140,7 @@ public class LivenessBiz implements DetectCallback, PreCallback {
         }
     }
 
-    private void showFaileToast(int errorCode, String errorMessage) {
+    private void showFaileToast(int errorCode,String errorMessage) {
         String toastStr = "";
         if (errorMessage.equals("BIZ_TOKEN_DENIED")){
             toastStr = mActivity.getResources().getString(R.string.livenessPreFailText1);
@@ -131,6 +156,7 @@ public class LivenessBiz implements DetectCallback, PreCallback {
             toastStr = mActivity.getResources().getString(R.string.livenessPreFailText4);
         }else if(errorMessage.equals("USER_CANCEL")){
             toastStr = "";
+            callback.onVerifyCancel();
         }else if(errorMessage.equals("NO_CAMERA_PERMISSION")){
             toastStr = mActivity.getResources().getString(R.string.livenessPreFailText5);
         }else if(errorMessage.equals("DEVICE_NOT_SUPPORT")){
@@ -146,16 +172,17 @@ public class LivenessBiz implements DetectCallback, PreCallback {
         }
 
         if (!TextUtils.isEmpty(toastStr)) {
-//            Toast.makeText(mActivity, toastStr, Toast.LENGTH_SHORT).show();
+//            event.setResultCode(LivenessEvent.LIVENESS_FAIL);
+//            event.setErrCode(errorCode);
+//            event.setMsg(toastStr);
+//            EventBus.getDefault().post(event);
             callback.onVerifyFail(toastStr);
         }
     }
 
     private void showFailDialog(final int errorCode, final String Msg){
-//        mActivity.runOnUiThread(new Runnable() {
-//            @Override
-//            public void run() {
-                LivenessResultDialog dialog = new LivenessResultDialog();
+
+          LivenessResultDialog dialog = new LivenessResultDialog();
 
                 if (!mActivity.isDestroyed()){
                     dialog.show(mActivity.getFragmentManager(), "");
@@ -172,7 +199,7 @@ public class LivenessBiz implements DetectCallback, PreCallback {
                         @Override
                         public void onDismiss(boolean isTryAgain) {
                             if(isTryAgain) {
-                                getBizToken(idCardName,idCardNumber);
+                                getBizToken(idCardName,idCardNumber,mInfo);
                             } else {
 //                                event.setResultCode(LivenessEvent.LIVENESS_FAIL);
 //                                event.setErrCode(errorCode);
@@ -185,23 +212,6 @@ public class LivenessBiz implements DetectCallback, PreCallback {
 
                 }
 
-//                LivenessResultDialog dialog = new LivenessResultDialog();
-//                dialog.show(mActivity.getFragmentManager(), "");
-//                dialog.setReson(Msg);
-//                dialog.setTitle("刷脸认证失败");
-//                dialog.setLivenessDialogDismissListener(new LivenessDialogDismissListener() {
-//                    @Override
-//                    public void onDismiss(boolean isTryAgain) {
-//                        if(isTryAgain) {
-//                            getBizToken(idCardName,idCardNumber);
-//                        } else {
-//
-//                        }
-//                    }
-//                });
-
-//            }
-//        });
 
     }
 

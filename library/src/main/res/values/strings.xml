@@ -46,4 +46,9 @@
     <string name="livenessPreFailText8">请开启读写SD卡权限后重试</string>
     <string name="livenessPreFailText9">认证失败，请重试</string>
     <string name="livenessPreFailText10">长时间未操作，请重试</string>
+
+    <string name="show_bankcard_name">持卡人: %1$s</string>
+    <string name="bankcardscan_dialog_horizontalTips">将银行卡号面放在该区域，扫描卡片</string>
+    <string name="dialog_bankcard_verify_tips">为保证账户资金安全\n请绑定持卡人本人银行卡</string>
+
 </resources>

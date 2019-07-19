@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="313dp"
+    android:layout_height="264dp"
+    android:orientation="vertical"
+    android:layout_gravity="center"
+    android:background="@drawable/confirm_dialog_bg"
+    android:layout_marginRight="35dp"
+    android:layout_marginLeft="35dp">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp">
+
+        <ImageView
+            android:id="@+id/img_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentRight="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/cir_close"
+            android:layout_marginRight="10dp"/>
+
+    </RelativeLayout>
+
+
+    <TextView
+        android:id="@+id/tv_idcard_fail_reason"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+       android:gravity="center"
+        android:text="请勿使用临时身份证进行认证"
+        android:layout_marginTop="@dimen/dp_16"
+        android:layout_marginLeft="@dimen/dp_16"
+        android:layout_marginRight="@dimen/dp_16"
+        android:layout_marginBottom="@dimen/dp_16"
+        android:textSize="18sp"
+        android:textColor="#666666"
+        />
+
+
+    <TextView
+        android:id="@+id/tv_idcard_fail_try_again"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/dp_48"
+        android:text="我知道了"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="@dimen/dp_16"
+        android:layout_marginRight="@dimen/dp_16"
+        android:layout_marginLeft="@dimen/dp_16"
+        android:textSize="16sp"
+        android:textColor="@android:color/white"
+        android:background="@drawable/liveness_result_operation_bg"
+        android:gravity="center"
+        android:layout_marginBottom="@dimen/dp_16"/>
+
+</LinearLayout>

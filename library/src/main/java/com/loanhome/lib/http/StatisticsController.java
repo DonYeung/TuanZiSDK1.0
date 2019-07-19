@@ -126,6 +126,51 @@ public class StatisticsController {
                 });
     }
 
+    /**
+     * 增加的统计接口，增加了p_position,param1,param2
+     * @param page
+     * @param logType
+     * @param ckModule
+     * @param index
+     * @param functionid
+     * @param contentid
+     */
+    public void newRequestStatics(String page,String logType, String ckModule, String index, String functionid, String contentid,
+                                  String pPosition, String param1, String param2) {
+        RetrofitUtils4test.getInstance().newRequestStatics(page, logType, ckModule, index, functionid, contentid,pPosition,param1,param2)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Observer<StatisticResult>() {
+                    @Override
+                    public void onSubscribe(Disposable d) {
+
+                    }
+
+                    @Override
+                    public void onNext(StatisticResult result) {
+                        if (result.getResult().getStatus()!= STATUS_SUCCESS) {
+                            Log.i(TAG, "== 新的统计接口----上传统计失败 ==");
+                            return;
+                        }
+                        else {
+                            Log.i(TAG, "== 新的统计接口----上传统计成功 ==");
+                        }
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.i(TAG, "== 新的统计接口----上传统计失败 ==");
+
+                    }
+
+                    @Override
+                    public void onComplete() {
+
+                    }
+                });
+    }
+
 
 
 

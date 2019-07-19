@@ -57,4 +57,46 @@
         app:layout_constraintEnd_toEndOf="@+id/btn3"
         app:layout_constraintStart_toStartOf="@+id/btn3"
         app:layout_constraintTop_toBottomOf="@+id/btn3" />
+
+    <Button
+        android:id="@+id/btn5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="同盾sdk"
+        android:layout_marginTop="@dimen/dp_20"
+        app:layout_constraintEnd_toEndOf="@+id/btn4"
+        app:layout_constraintStart_toStartOf="@+id/btn4"
+        app:layout_constraintTop_toBottomOf="@+id/btn4" />
+
+    <Button
+        android:id="@+id/btn6"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="银行卡OCR"
+        android:layout_marginTop="@dimen/dp_20"
+        app:layout_constraintEnd_toEndOf="@+id/btn5"
+        app:layout_constraintStart_toStartOf="@+id/btn5"
+        app:layout_constraintTop_toBottomOf="@+id/btn5" />
+
+    <TextView
+        android:id="@+id/tv_textcontent"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="回调结果展示："
+        android:layout_marginTop="@dimen/dp_20"
+        app:layout_constraintEnd_toEndOf="@+id/btn6"
+        app:layout_constraintStart_toStartOf="@+id/btn6"
+        app:layout_constraintTop_toBottomOf="@+id/btn6" />
+
+    <TextView
+        android:id="@+id/tv_content"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:layout_marginTop="@dimen/dp_20"
+        app:layout_constraintEnd_toEndOf="@+id/tv_textcontent"
+        app:layout_constraintStart_toStartOf="@+id/tv_textcontent"
+        app:layout_constraintTop_toBottomOf="@+id/tv_textcontent" />
+
+
 </android.support.constraint.ConstraintLayout>

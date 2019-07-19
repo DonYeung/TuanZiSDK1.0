@@ -9,14 +9,29 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.REORDER_TASKS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 
-      <application
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS"/>
+    <uses-permission android:name="android.permission.GET_TASKS" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+
+
+
+    <application
           >
 
           <activity
               android:name=".activity.IDCardDetectActivity"
               android:theme="@style/Theme.AppCompat.NoActionBar"
               android:screenOrientation="landscape"/>
+
+        <activity
+            android:name=".activity.BankCardScanActivity"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="landscape"/>
 
           <activity
               android:name="com.loanhome.lib.activity.BillImportModeActivity"
@@ -42,6 +57,8 @@
                   android:resource="@xml/accessible_crawler_config" />
           </service>
 
+          <!--同盾 SDK合作方标识 -->
+          <meta-data android:name="PARTNER_CODE" android:value="tz" />
 
       </application>
 

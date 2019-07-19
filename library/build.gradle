@@ -65,4 +65,5 @@ dependencies {
     implementation "android.arch.lifecycle:runtime:$lifecycle_version"
     annotationProcessor "android.arch.lifecycle:compiler:$lifecycle_version"
     implementation files('libs/meglive_still.aar')
+    implementation files('libs\\fm-sdk-3.2.1.jar')
 }

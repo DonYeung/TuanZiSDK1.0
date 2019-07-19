@@ -5,6 +5,7 @@ import com.loanhome.lib.bean.BizTokenResult;
 import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.IDCardResult;
 import com.loanhome.lib.bean.StatisticResult;
+import com.loanhome.lib.bean.TongDunResult;
 import com.loanhome.lib.bean.TypeStateResult;
 import com.loanhome.lib.bean.UserInfoResult;
 import com.loanhome.lib.bean.UserType;
@@ -32,11 +33,12 @@ public interface ApiService {
     @POST(LOAN_USER_SERVICE + "/active/user-type")
     Observable<UserType> getUserType();
 
-    @POST(LOAN_DATA_SOURCE + "/faceId/ocr/idCard")
+    @POST(LOAN_DATA_SOURCE + "/flow/ocr/ocrIdCard")
     Observable<IDCardResult> getOCRResult(@Body RequestBody requestBody);
 
 
     @POST(LOAN_DATA_SOURCE + "/faceId/verifyMeglive")
+    @Deprecated
     Observable<HttpResult> upLoadingLivenessInfo_New(@Body RequestBody requestBody);
 
 
@@ -66,5 +68,8 @@ public interface ApiService {
 
     @POST(LOAN_API + "/flow/ocr/verifyMegLive")
     Observable<HttpResult> LivenessVerify(@Body RequestBody requestBody);
+
+    @POST(LOAN_DATA_SOURCE + "/app/fingerprint")
+    Observable<TongDunResult> upLoadFingerprint(@Body RequestBody requestBody);
 
 }

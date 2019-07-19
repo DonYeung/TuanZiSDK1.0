@@ -17,6 +17,9 @@ public interface Constants {
 		String STARBABA_TEST_FILE_PATH = STARBABA_PATH + File.separator
 				+ "test.txt";// 测试文件路径
 	}
+	interface SharedPreferencesKey {
+		String GETOCR_LISCENSE = "ocr_liscense";
+	}
 
 
 }

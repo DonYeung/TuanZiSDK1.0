@@ -217,4 +217,26 @@ public class Util {
 		return byteArrayOutputStream.toByteArray();
 	}
 
+	public static String getUUIDString(Context mContext) {
+		String KEY_UUID = "key_uuid";
+		SharedUtil sharedUtil = new SharedUtil(mContext);
+		String uuid = sharedUtil.getStringValueByKey(KEY_UUID);
+		if (uuid != null)
+			return uuid;
+
+		uuid = getPhoneNumber(mContext);
+		Log.w("ceshi", "uuid====" + uuid);
+		if (uuid == null || uuid.trim().length() == 0) {
+			uuid = getMacAddress(mContext);
+			if (uuid == null || uuid.trim().length() == 0) {
+				uuid = getDeviceID(mContext);
+				if (uuid == null || uuid.trim().length() == 0) {
+					uuid = UUID.randomUUID().toString();
+					uuid = Base64.encodeToString(uuid.getBytes(), Base64.DEFAULT);
+				}
+			}
+		}
+		sharedUtil.saveStringValue(KEY_UUID, uuid);
+		return uuid;
+	}
 }

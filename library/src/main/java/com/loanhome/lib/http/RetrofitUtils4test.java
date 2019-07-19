@@ -10,6 +10,7 @@ import com.loanhome.lib.bean.BizTokenResult;
 import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.IDCardResult;
 import com.loanhome.lib.bean.StatisticResult;
+import com.loanhome.lib.bean.TongDunResult;
 import com.loanhome.lib.bean.TypeStateResult;
 import com.loanhome.lib.bean.UserInfoResult;
 import com.loanhome.lib.http.cert.TrustAllHostnameVerifier;
@@ -114,7 +115,9 @@ public class RetrofitUtils4test {
         try {
             phead.put("mark",mark);
             phead.put("image", Base64.encodeToString(data, Base64.DEFAULT));
-            phead.put("imageRef", Base64.encodeToString(imageRef, Base64.DEFAULT));
+            if (imageRef!=null) {
+                phead.put("imageRef", Base64.encodeToString(imageRef, Base64.DEFAULT));
+            }
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -133,6 +136,7 @@ public class RetrofitUtils4test {
      * @param delta
      * @return
      */
+    @Deprecated
     public Observable<HttpResult> upLoadingLivenessInfo_New(Map<String, byte[]> map
             , String name
             , String number
@@ -197,7 +201,7 @@ public class RetrofitUtils4test {
     }
 
     /**
-     * verify
+     * 活体认证
      * @param data
      * @return
      */
@@ -215,6 +219,25 @@ public class RetrofitUtils4test {
         RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
         return apiService.LivenessVerify(body);
     }
+
+    /**
+     * 同盾SDK 上传设备指纹唯一标识
+     * @param balckBox
+     * @return
+     */
+    public Observable<TongDunResult> upLoadFingerprint(String balckBox) {
+        // TODO: 2019/6/28
+        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+        try {
+            phead.put("blackbox", balckBox);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
+        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+        return apiService.upLoadFingerprint(body);
+    }
+
     /**
      * 上传用户信息，魔蝎sdk后请求30接口使用
      * @param account
@@ -342,6 +365,45 @@ public class RetrofitUtils4test {
         return apiService.newRequestStatics(map);
     }
 
+
+    /**
+     * 增加的统计接口，增加了p_position,param1,param2
+     * @param page
+     * @param logType
+     * @param ckModule
+     * @param index
+     * @param functionid
+     * @param contentid
+     */
+    public Observable<StatisticResult> newRequestStatics(String page,String logType, String ckModule, String index, String functionid, String contentid,
+                                                         String pPosition, String param1, String param2) {
+
+        // TODO: 2019/6/28
+        JSONObject data = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+
+        try {
+            data.put("page",page);
+            data.put("position", index.equals(String.valueOf(-1)) ? "": index);
+            data.put("log_type", logType);
+            data.put("ck_module",ckModule);
+            data.put("functionid", functionid == null ? "" : functionid);
+            data.put("contentid", contentid == null ? "" : contentid);
+            data.put("p_position", pPosition == null ? "" : pPosition);
+            data.put("param1", param1 == null ? "" : param1);
+            data.put("param2", param2 == null ? "" : param2);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(data);
+
+        Map<String,String> map = new HashMap<String,String>();
+        map.put("phead",object.toString());
+        return apiService.newRequestStatics(map);
+    }
+
+
     /**
      * OCR请求接口
      * @param data
@@ -389,6 +451,7 @@ public class RetrofitUtils4test {
      * @param delta
      * @param listener
      */
+    @Deprecated
     public void upLoadingLivenessInfo_Newmain(Map<String, byte[]> map
             , String name
             , String number
