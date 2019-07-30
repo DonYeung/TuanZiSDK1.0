@@ -50,22 +50,21 @@ public class LivenessBiz implements DetectCallback, PreCallback {
                     public void onResponse(BizTokenResult response) {
 
                             bizToken = response.getToken();
-                            if (!TextUtils.isEmpty(bizToken)){
-                                megLiveManager.preDetect(mActivity, bizToken, null, HOST, LivenessBiz.this);
-                            }else{
-//                                event.setResultCode(LivenessEvent.LIVENESS_FAIL);
-//                                event.setErrCode(1003);
-//                                event.setMsg("认证出了点小问题，请稍后再试");
-//                                EventBus.getDefault().post(event);
-                                callback.onVerifyFail("认证出了点小问题，请稍后再试");
-                            }
+//                            if (!TextUtils.isEmpty(bizToken)){
+                            megLiveManager.preDetect(mActivity, bizToken, null, HOST, LivenessBiz.this);
+//                            }else{
+////                                event.setResultCode(LivenessEvent.LIVENESS_FAIL);
+////                                event.setErrCode(1003);
+////                                event.setMsg("认证出了点小问题，请稍后再试");
+////                                EventBus.getDefault().post(event);
+//                                callback.onVerifyFail("认证出了点小问题，请稍后再试");
+//                            }
 
                     }
 
                     @Override
                     public void onErrorResponse(int errorcode, String msg) {
-//                        Toast.makeText(mActivity, "认证出了点小问题，请稍后再试", Toast.LENGTH_SHORT).show();
-                        callback.onVerifyFail("认证出了点小问题，请稍后再试");
+                        callback.onVerifyFail(mActivity.getResources().getString(R.string.livenessPreFailText4));
                     }
                 });
 
@@ -125,14 +124,7 @@ public class LivenessBiz implements DetectCallback, PreCallback {
 
                 @Override
                 public void onErrorResponse(int errorcode, String msg) {
-//                    Toast.makeText(mActivity, "认证
-//                    event.setResultCode(LivenessEvent.LIVENESS_FAIL);
-//                    event.setErrCode(1003);
-//                    event.setMsg("认证出了点小问题，请稍后再试");
-//                    EventBus.getDefault().post(event);
-                    callback.onVerifyFail("认证出了点小问题，请稍后再试");
-
-
+                    callback.onVerifyFail(mActivity.getResources().getString(R.string.livenessPreFailText4));
                 }
             });
         }else{

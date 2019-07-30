@@ -115,8 +115,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         }else if (v.getId() == R.id.btn5){
             setTongDunSDK();
         }else if(v.getId() == R.id.btn6){
-//            setOCRBankCard();
-            setNotification();
+            setOCRBankCard();
+//            setNotification();
+//            setTopdialog();
         }
     }
 
@@ -128,6 +129,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         IDCarcdDetectUtil idCarcdDetectUtil =new IDCarcdDetectUtil();
         VerifyInfo verifyInfo =new VerifyInfo();
         verifyInfo.setCameraType(side);
+        verifyInfo.setNeedCallBackBack(true);
+        verifyInfo.setNeedCallBackFront(true);
         idCarcdDetectUtil.setInfo(verifyInfo);
         idCarcdDetectUtil.gotoIDCardDetect(MainActivity.this, new VerifyResultCallback() {
             @Override
@@ -203,7 +206,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     /**
-     * 调起魔蝎SDK
+     * 调起魔蝎SDK-刷新账单
      */
     private void setMoxie(){
 

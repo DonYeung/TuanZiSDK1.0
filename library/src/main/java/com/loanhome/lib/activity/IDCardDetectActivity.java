@@ -4,6 +4,7 @@ import android.Manifest;
 import android.animation.ObjectAnimator;
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
@@ -39,9 +40,6 @@ import com.loanhome.lib.bean.IDCardResult;
 import com.loanhome.lib.http.RetrofitUtils4test;
 import com.loanhome.lib.http.StatisticsController;
 import com.loanhome.lib.listener.ExitConfirmDialogDismissListener;
-import com.loanhome.lib.listener.IDCardResultDialogDismissListener;
-import com.loanhome.lib.listener.IDCardVerifyFailDialogDismissListener;
-import com.loanhome.lib.listener.LivenessDialogDismissListener;
 import com.loanhome.lib.listener.VerifyResultCallback;
 import com.loanhome.lib.statistics.IStatisticsConsts;
 import com.loanhome.lib.util.CameraHandlerThread;
@@ -58,6 +56,9 @@ import com.loanhome.lib.view.LivenessResultDialog;
 import com.megvii.idcardquality.IDCardQualityAssessment;
 import com.megvii.idcardquality.IDCardQualityResult;
 import com.megvii.idcardquality.bean.IDCardAttr;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -88,8 +89,8 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
     private DecodeThread mDecoder = null;
     private IDCardQualityAssessment mIdCardQualityAssessment = null;
     private Rect mRoi;
-    //    private ImageView mImageView;
-    private boolean isCanDetected = false;//是否可以检测，5s超时后停止检测 TODO
+   //是否可以检测，5s超时后停止检测 TODO
+    private boolean isCanDetected = false;
     private boolean isDetectFinished = false;
 
     private IDCardQualityResult mQualityResult;
@@ -343,25 +344,54 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         if (mVerifyResultCallback == null) {
             return;
         }
+        JSONObject object = new JSONObject();
         if (isNeedCallBackFront && isNeedCallBackBack && isFrontComplete && isBackComplete) {
             idCardInfo.setSide(2);
-            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"idCardName\":\""+idCardInfo.getIdCardName() + "\",\"idCardNumber\":\""+idCardInfo.getIdCardNumber() +"\",\"address\":\""+idCardInfo.getAddress() + "\",\"issueBy\":\""+idCardInfo.getIssuedBy() + "\",\"validDate\":\""+idCardInfo.getValidDate() +"\"}";
+            try {
+                object.put("side",idCardInfo.getSide());
+                object.put("frontImages",idCardInfo.getFrontImages());
+                object.put("frontImages",idCardInfo.getBackImages());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String jsoncallback = object.toString();
+//            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"idCardName\":\""+idCardInfo.getIdCardName() + "\",\"idCardNumber\":\""+idCardInfo.getIdCardNumber() +"\",\"address\":\""+idCardInfo.getAddress() + "\",\"issueBy\":\""+idCardInfo.getIssuedBy() + "\",\"validDate\":\""+idCardInfo.getValidDate() +"\"}";
             mVerifyResultCallback.onVerifySuccess(jsoncallback);
 
         } else if (isNeedCallBackFront && isFrontComplete) {
             idCardInfo.setSide(0);
-            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"idCardName\":\""+idCardInfo.getIdCardName() + "\",\"idCardNumber\":\""+idCardInfo.getIdCardNumber() +"\",\"address\":\""+idCardInfo.getAddress()+"\"}";
-            Log.i(TAG, "onDismiss: "+jsoncallback);
+            try {
+                object.put("side",idCardInfo.getSide());
+                object.put("frontImages",idCardInfo.getFrontImages());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String jsoncallback = object.toString();
+//            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"idCardName\":\""+idCardInfo.getIdCardName() + "\",\"idCardNumber\":\""+idCardInfo.getIdCardNumber() +"\",\"address\":\""+idCardInfo.getAddress()+"\"}";
+
             mVerifyResultCallback.onVerifySuccess(jsoncallback);
 
         } else if (isNeedCallBackBack && isBackComplete) {
             idCardInfo.setSide(1);
-            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"issueBy\":\""+idCardInfo.getIssuedBy() + "\",\"validDate\":\""+idCardInfo.getValidDate() +"\"}";
-            Log.i(TAG, "onDismiss: "+jsoncallback);
+            try {
+                object.put("side",idCardInfo.getSide());
+                object.put("backImage",idCardInfo.getBackImages());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String jsoncallback = object.toString();
+//            String jsoncallback = "{\"side\": \" " + idCardInfo.getSide() + "\",\"issueBy\":\""+idCardInfo.getIssuedBy() + "\",\"validDate\":\""+idCardInfo.getValidDate() +"\"}";
+
             mVerifyResultCallback.onVerifySuccess(jsoncallback);
         } else {
             //取消身份证认证
             idCardInfo.setSide(3);
+            try {
+                object.put("side",idCardInfo.getSide());
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            String jsoncallback = object.toString();
             mVerifyResultCallback.onVerifyCancel();
         }
         finish();
@@ -630,7 +660,8 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                         + "in_bound: " + new BigDecimal(mQualityResult.attr.inBound).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue() + "\n"
                                         + "is_idcard: " + new BigDecimal(mQualityResult.attr.isIdcard).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue() + "\n"
                                         + "flare: " + mQualityResult.attr.specularHightlightCount + "\n"
-                                        + "shadow: " + mQualityResult.attr.shadowCount + "\n";
+                                        + "shadow: " + mQualityResult.attr.shadowCount + "\n"
+                                        + "brightness: " + mQualityResult.attr.brightness +"\n";
                                 Log.i("Don", "run: success result---" + debugResult);
                             } else {
 //                                Log.i(TAG, "run: 失败");
@@ -653,7 +684,8 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                                         + "in_bound: " + new BigDecimal(mQualityResult.attr.inBound).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue() + "\n"
                                         + "is_idcard: " + new BigDecimal(mQualityResult.attr.isIdcard).setScale(3, BigDecimal.ROUND_HALF_UP).doubleValue() + "\n"
                                         + "flare: " + mQualityResult.attr.specularHightlightCount + "\n"
-                                        + "shadow: " + mQualityResult.attr.shadowCount + "\n";
+                                        + "shadow: " + mQualityResult.attr.shadowCount + "\n"
+                                        + "brightness: " + mQualityResult.attr.brightness +"\n";
                                 Log.i("Don", "run: failed result---" + debugResult);
                             }
                         }
@@ -681,11 +713,13 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         if (mQualityResult.attr.side == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT) {
             portraitImg = mQualityResult.croppedImageOfPortrait();
 //            event.setFrontImages(Base64.encodeToString(Util.bmp2byteArr(iDCardImg), Base64.DEFAULT));
+            idCardInfo.setFrontImages(Base64.encodeToString(Util.bmp2byteArr(iDCardImg), Base64.DEFAULT));
 
             gotoVerify(mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT ? 0 : 1,
                     Util.bmp2byteArr(iDCardImg),Util.bmp2byteArr(portraitImg));
         }else{
 //            event.setBackImages(Base64.encodeToString(Util.bmp2byteArr(iDCardImg), Base64.DEFAULT));
+            idCardInfo.setBackImages(Base64.encodeToString(Util.bmp2byteArr(iDCardImg), Base64.DEFAULT));
             gotoVerify(mSide == IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT ? 0 : 1,
                     Util.bmp2byteArr(iDCardImg),null);
         }
@@ -1135,8 +1169,6 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
                         }
 
                         callBackData();
-                        mVerifyResultCallback.onVerifyCancel();
-                        doFinish();
 
                     }
                 }
@@ -1319,7 +1351,6 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 //                                public void onDismiss(boolean isconfirm) {
 //                                    if (isconfirm){
 //
-//
 //                                        //新OCR统计-确认无误按钮/正面
 //                                        StatisticsController.getInstance().newOCRRequestStatics(IStatisticsConsts.UmengEventId.Page.PAGE_OCR_CONFIRM,
 //                                                IStatisticsConsts.UmengEventId.LogType.LOG_TYPE_CLICK,
@@ -1354,6 +1385,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 //                            });
 //                        }
 //                    });
+
                 }
 
                 @Override
@@ -1367,6 +1399,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 //                    Log.i(TAG, "onErrorResponse: "+msg);
 //                    switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_FRONT);
                 }
+
             });
 
         } else {//背面认证
@@ -1519,9 +1552,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
 //                        Toast.makeText(IDCardDetectActivity.this, "未能连接到互联网，请检查网络设置",
 //                                Toast.LENGTH_SHORT).show();
 //                    }
-//                    Log.i(TAG, "onErrorResponse: "+msg);
 //                    switchSide(IDCardAttr.IDCardSide.IDCARD_SIDE_BACK);
-
                 }
             });
 
