@@ -9,6 +9,7 @@ import com.loanhome.lib.bean.BankCardResult;
 import com.loanhome.lib.bean.BizTokenResult;
 import com.loanhome.lib.bean.HttpResult;
 import com.loanhome.lib.bean.IDCardResult;
+import com.loanhome.lib.bean.LivenessVerifyResult;
 import com.loanhome.lib.bean.StatisticResult;
 import com.loanhome.lib.bean.TongDunResult;
 import com.loanhome.lib.bean.TypeStateResult;
@@ -205,7 +206,7 @@ public class RetrofitUtils4test {
      * @param data
      * @return
      */
-    public Observable<HttpResult> LivenessVerify(String token, byte[] data) {
+    public Observable<LivenessVerifyResult> LivenessVerify(String token, byte[] data) {
         // TODO: 2019/6/28
         JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
         try {
@@ -568,15 +569,15 @@ public class RetrofitUtils4test {
 
     /**
      *
-     * @param name
-     * @param number
+     * @param token
+     * @param data
      * @param listener
      */
     public void LivenessVerifymain(String token, byte[] data,final ResponseListener listener){
         RetrofitUtils4test.getInstance().LivenessVerify(token,data)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<HttpResult>() {
+                .subscribe(new Observer<LivenessVerifyResult>() {
 
 
                     @Override
@@ -585,12 +586,12 @@ public class RetrofitUtils4test {
                     }
 
                     @Override
-                    public void onNext(HttpResult httpResult) {
-                        if (httpResult.getStatus()!= STATUS_SUCCESS) {
-                            handleResult(httpResult,listener);
+                    public void onNext(LivenessVerifyResult verifyResult) {
+                        if (verifyResult.getResult().getStatus()!= STATUS_SUCCESS) {
+                            handleResult(verifyResult.getResult(),listener);
                         }
                         else{
-                            listener.onResponse(httpResult);
+                            listener.onResponse(verifyResult);
                         }
                     }
 

@@ -189,7 +189,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onVerifyFail(String type) {
                 Log.i(TAG, "onVerifyFail: "+type);
-                tv_content.setText(type);
+
             }
 
             @Override

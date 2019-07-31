@@ -110,7 +110,7 @@ public class LivenessBiz implements DetectCallback, PreCallback {
             RetrofitUtils4test.getInstance().LivenessVerifymain(token, data.getBytes(), new RetrofitUtils4test.ResponseListener<LivenessVerifyResult>() {
                 @Override
                 public void onResponse(LivenessVerifyResult response) {
-                    Boolean flag = response.getFlag();
+                    Boolean flag = response.isFlag();
                     if (flag){
                         callback.onVerifySuccess("刷脸验证成功");
                     } else{
