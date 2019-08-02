@@ -13,3 +13,4 @@
 .externalNativeBuild
 /app/build/
 /library/build/
+/lib/build/

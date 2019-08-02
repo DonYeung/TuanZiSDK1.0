@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         verifyInfo.setCameraType(side);
         verifyInfo.setNeedCallBackBack(true);
         verifyInfo.setNeedCallBackFront(true);
+        verifyInfo.setApi_id("430");
+        verifyInfo.setContentId("90");
         idCarcdDetectUtil.setInfo(verifyInfo);
         idCarcdDetectUtil.gotoIDCardDetect(MainActivity.this, new VerifyResultCallback() {
             @Override
@@ -173,6 +175,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         VerifyInfo verifyInfo = new VerifyInfo();
         verifyInfo.setIdCardName("杨振东");
         verifyInfo.setIdCardNumber("440509199411291218");
+        verifyInfo.setApi_id("430");
+        verifyInfo.setContentId("90");
         livenessUtil.setInfo(verifyInfo);
         livenessUtil.getBizToken(this, new VerifyResultCallback() {
             @Override

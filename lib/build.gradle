@@ -1,0 +1,30 @@
+apply plugin: 'java-library'
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+}
+
+sourceCompatibility = "7"
+targetCompatibility = "7"
+
+apply plugin: 'maven'
+
+def coreAarFile = file('libs/meglive_still.aar')
+//def coreAarFile = file('libs/moxie-client-2.4.4.aar')
+
+artifacts {
+    archives coreAarFile
+}
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: "file://D:\\DonMaven")
+            pom.project {
+                groupId  "tuanzi.lib.third" //包名
+//                artifactId  "moxie"             //名称
+                artifactId  "meglive"             //名称
+                version  "1.0.0-SNAPSHOT"  //版本
+            }
+        }
+    }
+}

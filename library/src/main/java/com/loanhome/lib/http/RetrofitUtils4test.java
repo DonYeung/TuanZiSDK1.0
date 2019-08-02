@@ -110,56 +110,35 @@ public class RetrofitUtils4test {
      * @return
      */
     public Observable<IDCardResult> getOCRResult(byte[] data,byte[] imageRef
-            ,int mark) {
+            ,int mark,String contentid,String api_id) {
           // TODO: 2019/6/28
-        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+//        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
         try {
-            phead.put("mark",mark);
-            phead.put("image", Base64.encodeToString(data, Base64.DEFAULT));
-            if (imageRef!=null) {
-                phead.put("imageRef", Base64.encodeToString(imageRef, Base64.DEFAULT));
+            JSONObject phead = BaseInterceptor4Phead.getInstance().getPheadJson();
+            phead.put("product_id",contentid);
+            phead.put("api_id",api_id);
+
+            JSONObject newdata = new JSONObject();
+            try {
+                newdata.put("phead", phead);
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
+
+            newdata.put("mark",mark);
+            newdata.put("image", Base64.encodeToString(data, Base64.DEFAULT));
+            if (imageRef!=null) {
+                newdata.put("imageRef", Base64.encodeToString(imageRef, Base64.DEFAULT));
+            }
+            JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(newdata);
+            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+            return apiService.getOCRResult(body);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
-        return apiService.getOCRResult(body);
+        return null;
     }
 
-
-    /**
-     * 活体请求接口
-     * @param map
-     * @param name
-     * @param number
-     * @param delta
-     * @return
-     */
-    @Deprecated
-    public Observable<HttpResult> upLoadingLivenessInfo_New(Map<String, byte[]> map
-            , String name
-            , String number
-            , String delta) {
-        // TODO: 2019/6/28
-        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
-        try {
-            phead.put("idCardName", name);
-            phead.put("idCardNumber", number);
-            phead.put("imageBest", Base64.encodeToString(map.get("image_best"), Base64.DEFAULT));
-            phead.put("imageAction1", Base64.encodeToString(map.get("image_action1"), Base64.DEFAULT));
-            phead.put("imageAction2", Base64.encodeToString(map.get("image_action2"), Base64.DEFAULT));
-            phead.put("imageAction3", Base64.encodeToString(map.get("image_action3"), Base64.DEFAULT));
-            phead.put("delta", delta);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
-        return apiService.upLoadingLivenessInfo_New(body);
-    }
 
     /**
      * bank OCR请求接口
@@ -182,43 +161,64 @@ public class RetrofitUtils4test {
 
 
     /**
-     * biztoken
-     * @param data
+     * biztoken接口
+     * @param
      * @return
      */
-    public Observable<BizTokenResult> getBizToken(String name,String number) {
+    public Observable<BizTokenResult> getBizToken(String name,String number,String contentid,String api_id) {
         // TODO: 2019/6/28
-        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+//        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
         try {
-            phead.put("name", name);
-            phead.put("idCardNum", number);
+            JSONObject phead = BaseInterceptor4Phead.getInstance().getPheadJson();
+            phead.put("product_id",contentid);
+            phead.put("api_id",api_id);
+
+            JSONObject newdata = new JSONObject();
+            try {
+                newdata.put("phead", phead);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+            newdata.put("name", name);
+            newdata.put("idCardNum", number);
+
+            JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(newdata);
+            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+            return apiService.getBizToken(body);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
-        return apiService.getBizToken(body);
+        return null;
     }
 
     /**
-     * 活体认证
-     * @param data
+     * 活体认证接口
      * @return
      */
-    public Observable<LivenessVerifyResult> LivenessVerify(String token, byte[] data) {
+    public Observable<LivenessVerifyResult> LivenessVerify(String token, byte[] image4byte,String contentid,String api_id) {
         // TODO: 2019/6/28
-        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
+//        JSONObject phead = BaseInterceptor4Phead.getInstance().getPostDataWithPhead();
         try {
-            phead.put("token", token);
-            phead.put("imageBest",  Base64.encodeToString(data, Base64.DEFAULT));
+            JSONObject phead = BaseInterceptor4Phead.getInstance().getPheadJson();
+            phead.put("product_id",contentid);
+            phead.put("api_id",api_id);
+
+            JSONObject newdata = new JSONObject();
+            try {
+                newdata.put("phead", phead);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            newdata.put("token", token);
+            newdata.put("imageBest",  Base64.encodeToString(image4byte, Base64.DEFAULT));
+            JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(newdata);
+            RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
+            return apiService.LivenessVerify(body);
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        JSONObject object = BaseInterceptor4Phead.getInstance().getParamJsonObject(phead);
-
-        RequestBody body = RequestBody.create(MediaType.parse("application/json; charset=utf-8"), object.toString());
-        return apiService.LivenessVerify(body);
+        return null;
     }
 
     /**
@@ -406,13 +406,13 @@ public class RetrofitUtils4test {
 
 
     /**
-     * OCR请求接口
+     * OCR请求接口验证结果
      * @param data
      * @param mark
      * @param listener
      */
-    public void getOCRResultmain(byte[] data,byte[] imageRef,int mark,final ResponseListener listener){
-        RetrofitUtils4test.getInstance().getOCRResult(data,imageRef,mark)
+    public void getOCRResultmain(byte[] data,byte[] imageRef,int mark,String contentid,String api_id,final ResponseListener listener){
+        RetrofitUtils4test.getInstance().getOCRResult(data,imageRef,mark,contentid,api_id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<IDCardResult>() {
@@ -428,52 +428,6 @@ public class RetrofitUtils4test {
                         }
                         else{
                             listener.onResponse(idCardResult);
-                        }
-                    }
-
-                    @Override
-                    public void onError(Throwable e) {
-                        Log.i(TAG, "onError: "+e.toString());
-                    }
-
-                    @Override
-                    public void onComplete() {
-
-                    }
-                });
-    }
-
-
-    /**
-     * 活体请求接口
-     * @param map
-     * @param name
-     * @param number
-     * @param delta
-     * @param listener
-     */
-    @Deprecated
-    public void upLoadingLivenessInfo_Newmain(Map<String, byte[]> map
-            , String name
-            , String number
-            , String delta,final ResponseListener listener){
-        RetrofitUtils4test.getInstance().upLoadingLivenessInfo_New(map,name,number,delta)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(new Observer<HttpResult>() {
-
-                    @Override
-                    public void onSubscribe(Disposable d) {
-
-                    }
-
-                    @Override
-                    public void onNext(HttpResult httpResult) {
-                        if (httpResult.getStatus()!= STATUS_SUCCESS) {
-                            handleResult(httpResult,listener);
-                        }
-                        else{
-                            listener.onResponse(httpResult);
                         }
                     }
 
@@ -531,10 +485,10 @@ public class RetrofitUtils4test {
 
 
     /**
-     * biztoken
+     *  获取活体biztoken接口
      */
-    public void getBizTokenmain(String name,String number,final ResponseListener listener){
-        RetrofitUtils4test.getInstance().getBizToken(name,number)
+    public void getBizTokenmain(String name,String number,String contentid,String api_id,final ResponseListener listener){
+        RetrofitUtils4test.getInstance().getBizToken(name,number,contentid,api_id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<BizTokenResult>() {
@@ -568,13 +522,13 @@ public class RetrofitUtils4test {
     }
 
     /**
-     *
+     * 获取活体接口验证结果
      * @param token
      * @param data
      * @param listener
      */
-    public void LivenessVerifymain(String token, byte[] data,final ResponseListener listener){
-        RetrofitUtils4test.getInstance().LivenessVerify(token,data)
+    public void LivenessVerifymain(String token, byte[] data,String contentid,String api_id,final ResponseListener listener){
+        RetrofitUtils4test.getInstance().LivenessVerify(token,data,contentid,api_id)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Observer<LivenessVerifyResult>() {

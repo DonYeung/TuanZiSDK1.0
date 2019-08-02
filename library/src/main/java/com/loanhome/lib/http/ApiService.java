@@ -34,13 +34,8 @@ public interface ApiService {
     @POST(LOAN_USER_SERVICE + "/active/user-type")
     Observable<UserType> getUserType();
 
-    @POST(LOAN_DATA_SOURCE + "/flow/ocr/ocrIdCard")
+    @POST(LOAN_API + "/flow/ocr/ocrIdCard")
     Observable<IDCardResult> getOCRResult(@Body RequestBody requestBody);
-
-
-    @POST(LOAN_DATA_SOURCE + "/faceId/verifyMeglive")
-    @Deprecated
-    Observable<HttpResult> upLoadingLivenessInfo_New(@Body RequestBody requestBody);
 
 
     @POST(LOAN_DATA_SOURCE + "/faceId/ocr/bank")

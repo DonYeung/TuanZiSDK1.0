@@ -1240,7 +1240,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         if (mIdSide == 0) {
             Log.i(TAG, "gotoVerify: 正面请求认证");
 
-            RetrofitUtils4test.getInstance().getOCRResultmain(bytes, bytes_ref,mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
+            RetrofitUtils4test.getInstance().getOCRResultmain(bytes, bytes_ref,mIdSide, contentId,api_id,new RetrofitUtils4test.ResponseListener<IDCardResult>() {
 
                 @Override
                 public void onResponse(IDCardResult idCardResult) {
@@ -1405,7 +1405,7 @@ public class IDCardDetectActivity extends Activity implements TextureView.Surfac
         } else {//背面认证
             Log.i(TAG, "gotoVerify: 背面请求认证");
 
-            RetrofitUtils4test.getInstance().getOCRResultmain(bytes,bytes_ref, mIdSide, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
+            RetrofitUtils4test.getInstance().getOCRResultmain(bytes,bytes_ref, mIdSide,contentId,api_id, new RetrofitUtils4test.ResponseListener<IDCardResult>() {
 
                 @Override
                 public void onResponse(IDCardResult idCardResult) {

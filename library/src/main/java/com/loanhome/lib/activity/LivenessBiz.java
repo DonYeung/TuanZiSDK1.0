@@ -29,7 +29,8 @@ public class LivenessBiz implements DetectCallback, PreCallback {
     private String idCardNumber;
     private VerifyResultCallback callback;
     private VerifyInfo mInfo;
-
+    private String contentId;
+    private String api_id;
 
 
     public LivenessBiz(Activity activity){
@@ -43,8 +44,10 @@ public class LivenessBiz implements DetectCallback, PreCallback {
         idCardName = idcardname;
         idCardNumber = idcardnumber;
         mInfo = info;
+        contentId = info.getContentId();
+        api_id = info.getApi_id();
         Log.i(TAG, "getBizToken: ");
-        RetrofitUtils4test.getInstance().getBizTokenmain(idcardname, idcardnumber,
+        RetrofitUtils4test.getInstance().getBizTokenmain(idcardname, idcardnumber,contentId,api_id,
                 new RetrofitUtils4test.ResponseListener<BizTokenResult>() {
                     @Override
                     public void onResponse(BizTokenResult response) {
@@ -107,7 +110,7 @@ public class LivenessBiz implements DetectCallback, PreCallback {
                     String.valueOf(-1), mInfo.getFunctionId(), mInfo.getContentId(),mInfo.getApi_id(), mInfo.getpPosition(), mInfo.getParam1(), mInfo.getParam2());
 
 
-            RetrofitUtils4test.getInstance().LivenessVerifymain(token, data.getBytes(), new RetrofitUtils4test.ResponseListener<LivenessVerifyResult>() {
+            RetrofitUtils4test.getInstance().LivenessVerifymain(token, data.getBytes(),contentId,api_id, new RetrofitUtils4test.ResponseListener<LivenessVerifyResult>() {
                 @Override
                 public void onResponse(LivenessVerifyResult response) {
                     Boolean flag = response.isFlag();
