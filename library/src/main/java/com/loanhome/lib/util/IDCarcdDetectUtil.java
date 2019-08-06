@@ -51,7 +51,7 @@ public class IDCarcdDetectUtil {
     /**
      * 获取Liscense
      */
-    public void getOCRLiscense() {
+    public void getOCRLiscense(Activity activity ) {
         final IDCardQualityLicenseManager mIdCardLicenseManager = new IDCardQualityLicenseManager(activity);
         final Manager manager = new Manager(activity);
         manager.registerLicenseManager(mIdCardLicenseManager);
@@ -61,10 +61,10 @@ public class IDCarcdDetectUtil {
                 Constants.SharedPreferencesKey.GETOCR_LISCENSE,
                 Context.MODE_PRIVATE);
 
-        if(mSp.contains(Constants.SharedPreferencesKey.GETOCR_LISCENSE)){
-            Log.i("Don", "getOCRLiscense: GETOCR_LISCENSE 有值了");
-            return;
-        }
+//        if(mSp.contains(Constants.SharedPreferencesKey.GETOCR_LISCENSE)){
+//            Log.i("Don", "getOCRLiscense: GETOCR_LISCENSE 有值了");
+//            return;
+//        }
         Log.i("Don", "getOCRLiscense: GETOCR_LISCENSE 无值去请求");
         ExecutorService executors = Executors.newCachedThreadPool();
         executors.execute(new Runnable() {
@@ -89,14 +89,19 @@ public class IDCarcdDetectUtil {
     public void startGetLiscense(final Activity activity,final VerifyResultCallback callback){
         mIdCardLicenseManager = new IDCardQualityLicenseManager(activity);
 
-        long status =0;
-        try {
-            status = mIdCardLicenseManager.checkCachedLicense();
-        }catch (Throwable e){
-            e.printStackTrace();
-        }
+//        long status =0;
+//        try {
+//            status = mIdCardLicenseManager.checkCachedLicense();
+//        }catch (Throwable e){
+//            e.printStackTrace();
+//        }
+        final SharedPreferences mSp = activity.getSharedPreferences(
+                Constants.SharedPreferencesKey.GETOCR_LISCENSE,
+                Context.MODE_PRIVATE);
+        long status4Sp = 0;
+        status4Sp = mSp.getLong(Constants.SharedPreferencesKey.GETOCR_LISCENSE, status4Sp);
 
-        if (status > 0 ){
+        if (status4Sp > 0 ){
             Intent intent = new Intent(activity, IDCardDetectActivity.class);
             intent.putExtra("side",mInfo.getCameraType());
             intent.putExtra("idName", mInfo.getIdCardName());

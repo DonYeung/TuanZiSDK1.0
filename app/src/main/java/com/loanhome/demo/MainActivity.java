@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 .setenableLog(true)
                 .build();
 
+        Button button0 =findViewById(R.id.btn0);
         Button button1 =findViewById(R.id.btn1);
         Button button2 =findViewById(R.id.btn2);
         Button button3 =findViewById(R.id.btn3);
@@ -73,6 +74,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         Button button5 =findViewById(R.id.btn5);
         Button button6 =findViewById(R.id.btn6);
         tv_content =findViewById(R.id.tv_content);
+        button0.setOnClickListener(this);
         button1.setOnClickListener(this);
         button2.setOnClickListener(this);
         button3.setOnClickListener(this);
@@ -102,7 +104,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     @Override
     public void onClick(View v) {
-        if (v.getId() == R.id.btn1){
+        if (v.getId() == R.id.btn0){
+            getOCRLiscense();
+        }
+        else if (v.getId() == R.id.btn1){
             setIDCardOCR(0);
         }
         else if (v.getId() == R.id.btn2){
@@ -116,9 +121,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             setTongDunSDK();
         }else if(v.getId() == R.id.btn6){
             setOCRBankCard();
-//            setNotification();
-//            setTopdialog();
         }
+    }
+
+    /**
+     * 调起OCR联网授权
+     */
+    private void getOCRLiscense(){
+        IDCarcdDetectUtil idCarcdDetectUtil = new IDCarcdDetectUtil();
+        idCarcdDetectUtil.getOCRLiscense(MainActivity.this);
     }
 
     /**
@@ -256,7 +267,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             @Override
             public void onSuccess(String data) {
                 Log.i(TAG, "onSuccess: "+data);
-                tv_content.setText("Moxie成功回调:"+data);
+                tv_content.setText("TongDunSDK成功回调:"+data);
             }
 
             @Override
@@ -278,7 +289,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private void setOCRBankCard(){
         OCRBankCardUtil ocrBankCardUtil = new OCRBankCardUtil();
         VerifyInfo verifyInfo = new VerifyInfo();
-        verifyInfo.setIdCardName("杨振东");
+        verifyInfo.setIdCardName("东");
         verifyInfo.setIdCardNumber("");
         ocrBankCardUtil.setInfo(verifyInfo);
         ocrBankCardUtil.gotoBankCardDetect(this, new VerifyResultCallback() {
@@ -311,69 +322,5 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         });
 
-    }
-
-    /**
-     * 调起通知
-     */
-    private void setNotification(){
-        Log.i(TAG, "setNotification: ");
-        NotificationManager manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        Notification.Builder builder = new Notification.Builder(this);
-
-        //使用广播启动Activity
-//        Intent intent = new Intent(mContext, GeneralReceiver.class);
-//        intent.setAction(ActionNames.BASE_STARTAPP_FROM_NOTY);
-//        PendingIntent pi = PendingIntent.getBroadcast(mContext, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
-            // 通知渠道的id
-            String id = "duodian_channel_01";
-            // 用户可以看到的通知渠道的名字.
-//			CharSequence name = mContext.getString(R.string.channel_name);
-            CharSequence name = "消息通知";
-            // 用户可以看到的通知渠道的描述
-//			String description = mContext.getString(R.string.channel_description);
-            String description = "暂无";
-            int importance = NotificationManager.IMPORTANCE_MAX;
-            //注意Name和description不能为null或者""
-            NotificationChannel mChannel = new NotificationChannel(id, name, importance);
-            // 配置通知渠道的属性
-            mChannel.setDescription(description);
-            // 设置通知出现时的闪灯（如果 android 设备支持的话）
-            mChannel.enableLights(false);
-            // 设置通知出现时的震动（如果 android 设备支持的话）
-            mChannel.enableVibration(false);
-            // 显示通知圆点
-            mChannel.setShowBadge(false);
-            //最后在notificationmanager中创建该通知渠道
-            manager.createNotificationChannel(mChannel);
-            builder.setChannelId(id);
-        }
-        //5.0以上必需要用此方法建造通知栏，图标才会正常显示
-//        Bitmap bitmap = ((BitmapDrawable) getResources().getDrawable(R.mipmap.ic_launcher_round)).getBitmap();
-        Bitmap bitmap = BitmapFactory.decodeResource(this.getResources(), R.drawable.icon_idverifie_tips);
-        if(Build.VERSION.SDK_INT>= 16) {//	4.1
-
-
-//            builder.setContentTitle("哈哈哈")
-//                    .setContentText("内容")
-//                    .setSmallIcon(R.drawable.icon_idverifie_tips)
-//                    .setLargeIcon(bitmap)
-////                .setContentIntent(pi)
-//                    .build();
-//            manager.notify(1, builder.build());
-
-            builder.setContentTitle("哈哈哈")
-                    .setContentText("内容")
-                    .setDefaults(Notification.DEFAULT_ALL)
-                    .setPriority(Notification.PRIORITY_HIGH)
-                    .setSmallIcon(R.drawable.icon_idverifie_tips)
-                    .setLargeIcon(BitmapFactory.decodeResource(this.getResources(),
-                            R.drawable.icon_idverifie_tips))
-                    .build();
-            manager.notify(1, builder.build());
-        }
     }
 }

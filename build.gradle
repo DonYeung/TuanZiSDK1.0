@@ -2,8 +2,7 @@
 
 buildscript {
     repositories {
-//        maven { url "https://raw.githubusercontent.com/DonYeung/TuanZiSDK4AAR/master" }
-        maven { url "http://company.yingzhongshare.com:1211/Don/TuanZiSDK4AAR/raw/master/" }
+//        maven { url "https://raw.githubusercontent.com/DonYeung/TuanZiAAR/master/" }
 
 
 //        //本地Maven仓库地址
@@ -14,6 +13,9 @@ buildscript {
         maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
         maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
         mavenCentral()
+
+        maven { url "http://company.yingzhongshare.com:1211/Don/TuanZiAAR/raw/master/" }
+//        maven { url "http://company.yingzhongshare.com:1211/Don/TuanZiSDK4AAR/raw/master/" }
 
     }
     dependencies {
@@ -26,18 +28,20 @@ buildscript {
 
 allprojects {
     repositories {
-//        maven { url "https://raw.githubusercontent.com/DonYeung/TuanZiSDK4AAR/master" }
-//        maven { url "http://company.yingzhongshare.com:1211/Don/TuanZiSDK4AAR/raw/master/" }
+//        maven { url "https://raw.githubusercontent.com/DonYeung/TuanZiAAR/master/" }
 
         //本地Maven仓库地址
-        maven {
-            url 'file://D://DonMaven'
-        }
+//        maven {
+//            url 'file://D://DonMaven'
+//        }
 
         maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
         maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
         mavenCentral()
-        
+
+        maven { url "http://company.yingzhongshare.com:1211/Don/TuanZiAAR/raw/master/" }
+//        maven { url "http://company.yingzhongshare.com:1211/Don/TuanZiSDK4AAR/raw/master/" }
+
     }
 }
 

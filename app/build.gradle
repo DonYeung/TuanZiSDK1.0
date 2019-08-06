@@ -17,11 +17,11 @@ android {
         }
     }
 }
-repositories {
-    flatDir {
-        dirs 'libs'
-    }
-}
+//repositories {
+//    flatDir {
+//        dirs 'libs'
+//    }
+//}
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
     implementation 'com.android.support:appcompat-v7:28.0.0'
@@ -32,7 +32,7 @@ dependencies {
 
 //    implementation project(path: ':library')
 
-    implementation 'tuanzi.lib:aar:1.0.0'
+    implementation 'tuanzi.lib:aar:1.0.0-SNAPSHOT'
 
 //    implementation files('libs/meglive_still.aar')
 //    implementation files('libs/moxie-client-2.4.4.aar')
